@@ -1,0 +1,22 @@
+{
+  "filePath": ".spec-workflow/specs/y2k-ifier/requirements.md",
+  "currentVersion": 2,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2026-01-06T01:42:24.568Z",
+      "trigger": "initial",
+      "approvalId": "approval_1767663744562_kdevhweq1",
+      "approvalTitle": "Y2K-ifier 需求文档 (中文版)"
+    },
+    {
+      "version": 2,
+      "filename": "snapshot-002.json",
+      "timestamp": "2026-01-06T01:45:49.063Z",
+      "trigger": "revision_requested",
+      "approvalId": "approval_1767663744562_kdevhweq1",
+      "approvalTitle": "Y2K-ifier 需求文档 (中文版)"
+    }
+  ]
+}

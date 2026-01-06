@@ -1,0 +1,315 @@
+/* 
+   Y2K-ifier: Retro 2000s Stylesheet
+   Surgical transformation without affecting layout.
+*/
+
+/* 1. 全局基础文字：模拟 MS Sans Serif 风格 */
+body,
+p,
+span,
+li,
+td,
+input,
+textarea,
+select {
+  font-family: Arial, "MS Sans Serif", "Microsoft Sans Serif", sans-serif !important;
+  font-weight: normal !important;
+  color: #000000 !important;
+}
+
+/* 2. 标题样式：经典的 Times New Roman 与黑色 */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Times New Roman", Times, serif !important;
+  color: #000000 !important; /* Changed from Navy to Black */
+  text-transform: none !important;
+  letter-spacing: normal !important;
+}
+
+/* 3. 链接：复古的蓝色下划线与紫色访问状态 */
+a {
+  color: #0000ee !important;
+  text-decoration: underline !important;
+}
+a:visited {
+  color: #551a8b !important;
+}
+a:hover {
+  color: #ff0000 !important; /* 悬停变红是不少老网站的习惯 */
+}
+
+/* 4. 按钮：经典的灰色 3D 凸起效果 */
+button,
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+.btn,
+[role="button"],
+[class*="button"]:not([class*="icon"]) {
+  background-color: #c0c0c0 !important;
+  background-image: none !important; /* 移除现代渐变 */
+  border-top: 2px solid #ffffff !important;
+  border-left: 2px solid #ffffff !important;
+  border-bottom: 2px solid #808080 !important;
+  border-right: 2px solid #808080 !important;
+  border-radius: 0 !important;
+  padding: 3px 10px !important;
+  color: #000000 !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  cursor: pointer !important;
+  font-size: 13px !important;
+  text-align: center !important;
+  text-transform: none !important;
+}
+
+button:active,
+input[type="button"]:active,
+[role="button"]:active {
+  border-top: 2px solid #808080 !important;
+  border-left: 2px solid #808080 !important;
+  border-bottom: 2px solid #ffffff !important;
+  border-right: 2px solid #ffffff !important;
+}
+
+/* 5. 图片：低保真滤镜与像素渲染 */
+img,
+video,
+canvas,
+picture,
+svg,
+[style*="background-image"],
+[class*="image"],
+[class*="img"] {
+  filter: contrast(115%) sepia(15%) brightness(105%) !important;
+  image-rendering: pixelated !important;
+  image-rendering: -moz-crisp-edges !important;
+  image-rendering: crisp-edges !important;
+  border: 1px solid #808080 !important;
+  border-radius: 0 !important;
+  clip-path: none !important;
+  mask-image: none !important;
+  -webkit-mask-image: none !important;
+  box-shadow: none !important;
+}
+
+/* 强制消除所有潜在的圆角（针对所有元素，确保复古硬朗风格） */
+*,
+*::before,
+*::after,
+div,
+section,
+article,
+figure,
+nav,
+header,
+footer,
+aside,
+main {
+  border-radius: 0 !important;
+}
+
+/* 6. 表单输入框：内陷效果 */
+input[type="text"],
+input[type="password"],
+textarea,
+select {
+  background-color: #ffffff !important;
+  border-top: 2px solid #808080 !important;
+  border-left: 2px solid #808080 !important;
+  border-bottom: 2px solid #ffffff !important;
+  border-right: 2px solid #ffffff !important;
+  border-radius: 0 !important;
+  padding: 2px !important;
+}
+
+/* 7. 系统风格滚动条 (Webkit) */
+::-webkit-scrollbar {
+  width: 16px !important;
+  height: 16px !important;
+}
+::-webkit-scrollbar-track {
+  background: #dfdfdf url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAFElEQVQImWNkYGBoYGBgYmBgYAAAAAYAAfL0V74AAAAASUVORK5CYII=")
+    repeat !important;
+}
+::-webkit-scrollbar-thumb {
+  background-color: #c0c0c0 !important;
+  border: 2px outset #ffffff !important;
+}
+::-webkit-scrollbar-button {
+  background-color: #c0c0c0 !important;
+  border: 2px outset #ffffff !important;
+  display: block !important;
+}
+
+/* 9. 经典复古光标：Windows 98 风格 */
+html,
+body {
+  /* 默认箭头光标 */
+  cursor: url("data:image/png;base64,iVBORw0KGgoAASUhEUgAAABAAAAAQBAMAAADt3eJSAAAAMFBMVEUAAAD///////////////////////////////////////////////////////////+fS9p8AAAACXBIWXMAAA7EAAAOxAGVKw4bAAAAO0lEQVQImWNgwADyMAZpEMvA0AhlsAaxBAyNUIYskGUAZcgCWYpAhlAGVyOUwRXIYARXIAtkKYIlEIYBAL96CPunm9InAAAAAElFTkSuQmCC")
+      0 0,
+    auto !important;
+}
+
+/* 链接、按钮及所有交互元素，包括其内部子元素 */
+a,
+a *,
+button,
+button *,
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+input[type="checkbox"],
+input[type="radio"],
+[role="button"],
+[role="button"] *,
+.btn,
+.btn *,
+label,
+summary,
+[href],
+[href] * {
+  /* 经典的复古“小手”光标 (热点坐标调整为 6,0 以对齐食指) */
+  cursor: url("data:image/png;base64,iVBORw0KGgoAASUhEUgAAABAAAAAQBAMAAADt3eJSAAAAMFBMVEUAAAD///////////////////////////////////////////////////////////+fS9p8AAAACXBIWXMAAA7EAAAOxAGVKw4bAAAAVElEQVQImWNgwADyMAZpEMvA0AhlsAaxBAyNUIYskGUAZcgCWYpAhlAGVyOUwRXIYARXIAtkKYIlEIYBADZECPunm9InAAAAAElFTkSuQmCC")
+      6 0,
+    pointer !important;
+}
+
+/* 10. CRT 扫描线与显示器特效 */
+html::after {
+  content: "" !important;
+  display: block !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  /* 基础扫描线：通过线性渐变模拟 */
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%),
+    linear-gradient(90deg, rgba(255, 0, 0, 0.05), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.05)) !important;
+  background-size: 100% 4px, 4px 100% !important;
+  pointer-events: none !important;
+  z-index: 2147483647 !important;
+  opacity: 0.7 !important; /* 稍微加深一点透明度 */
+}
+
+/* 屏幕微弱闪烁动画 */
+@keyframes crt-flicker {
+  0% {
+    opacity: 0.6;
+  }
+  5% {
+    opacity: 0.7;
+  }
+  10% {
+    opacity: 0.55;
+  }
+  15% {
+    opacity: 0.65;
+  }
+  25% {
+    opacity: 0.58;
+  }
+  30% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 0.6;
+  }
+}
+
+html::after {
+  animation: crt-flicker 0.1s infinite !important; /* 加快闪烁频率 */
+}
+
+/* 11. 屏幕边缘暗角 (Vignette) */
+html::before {
+  content: "" !important;
+  display: block !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  background: radial-gradient(circle, rgba(18, 16, 16, 0) 30%, rgba(18, 16, 16, 0.4) 100%) !important;
+  pointer-events: none !important;
+  z-index: 2147483646 !important;
+}
+
+/* 12. “正在建设中”挂件 (Under Construction) - 像素级 SVG 动画修复版 */
+#y2k-under-construction {
+  all: initial !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  position: fixed !important;
+  right: 20px !important;
+  bottom: 20px !important;
+  width: 120px !important;
+  height: 40px !important;
+  z-index: 2147483647 !important;
+  /* 注入自制的像素级 SVG 动画，完美模拟 90 年代的动态效果 */
+  background-image: url("data:image/svg+xml,%3Csvg width='120' height='40' viewBox='0 0 120 40' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='120' height='40' fill='%23FFD700'/%3E%3Cpath d='M-20 0L-10 0L-40 30L-50 30ZM0 0L10 0L-20 30L-30 30ZM20 0L30 0L0 30L-10 30ZM40 0L50 0L20 30L10 30ZM60 0L70 0L40 30L30 30ZM80 0L90 0L60 30L50 30ZM100 0L110 0L80 30L70 30ZM120 0L130 0L100 30L90 30ZM140 0L150 0L120 30L110 30Z' fill='%23000'%3E%3CanimateTransform attributeName='transform' type='translate' from='0 0' to='20 0' dur='0.5s' repeatCount='indefinite'/%3E%3C/path%3E%3Crect x='5' y='5' width='110' height='30' fill='%23FFD700' stroke='%23000' stroke-width='2'/%3E%3Ctext x='60' y='24' font-family='Courier New, monospace' font-size='10' font-weight='bold' fill='%23000' text-anchor='middle' style='image-rendering: pixelated;'%3EUNDER CONSTRUCTION%3C/text%3E%3C/svg%3E") !important;
+  background-size: contain !important;
+  background-repeat: no-repeat !important;
+  pointer-events: none !important;
+  image-rendering: pixelated !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  box-shadow: 4px 4px 0 #000 !important;
+}
+
+/* 13. 跑马灯效果 (Marquee Bar) */
+#y2k-marquee-bar {
+  all: initial !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 24px !important;
+  background-color: #c0c0c0 !important;
+  border-bottom: 2px solid #808080 !important;
+  box-shadow: 0 1px 0 #ffffff !important;
+  z-index: 2147483644 !important; /* 位于滤镜之下 */
+  overflow: hidden !important;
+  display: flex !important;
+  align-items: center !important;
+  white-space: nowrap !important;
+  font-family: Arial, "MS Sans Serif", sans-serif !important;
+  font-size: 12px !important;
+  color: #000000 !important;
+}
+
+.y2k-marquee-content {
+  display: inline-block !important;
+  padding-left: 100% !important;
+  animation: y2k-marquee-anim 20s linear infinite !important;
+  will-change: transform !important;
+}
+
+@keyframes y2k-marquee-anim {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+/* 为跑马灯腾出顶部空间 */
+html.y2k-mode-active {
+  margin-top: 24px !important;
+}
+
+/* 移除旧的伪元素方式 */
+body::after {
+  display: none !important;
+}

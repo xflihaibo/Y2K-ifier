@@ -1,0 +1,15 @@
+<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Monitor Body -->
+  <rect x="8" y="8" width="32" height="24" fill="#C0C0C0" stroke="black" stroke-width="2"/>
+  <path d="M8 8H40V10H10V32H8V8Z" fill="white"/>
+  <path d="M10 30H40V32H10V30Z" fill="#808080"/>
+  
+  <!-- Screen -->
+  <rect x="12" y="12" width="24" height="16" fill="#000080"/>
+  <path d="M12 12H36V13H13V28H12V12Z" fill="#000040"/>
+  
+  <!-- Stand -->
+  <rect x="18" y="32" width="12" height="4" fill="#808080" stroke="black" stroke-width="2"/>
+  <rect x="14" y="36" width="20" height="4" fill="#C0C0C0" stroke="black" stroke-width="2"/>
+  <path d="M14 36H34V37H15V40H14V36Z" fill="white"/>
+</svg>

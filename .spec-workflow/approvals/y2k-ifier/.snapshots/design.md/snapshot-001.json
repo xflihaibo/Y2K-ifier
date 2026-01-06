@@ -1,0 +1,16 @@
+{
+  "id": "snapshot_1767663986975_a10q5qapo",
+  "approvalId": "approval_1767663986972_qff9pipyh",
+  "approvalTitle": "Y2K-ifier 技术设计文档 (中文版)",
+  "version": 1,
+  "timestamp": "2026-01-06T01:46:26.975Z",
+  "trigger": "initial",
+  "status": "pending",
+  "content": "# 技术设计文档 - Y2K-ifier\n\n## 概述\n**Y2K-ifier** 是一个基于 Chrome Extension Manifest V3 的纯前端插件。它通过注入专门设计的 CSS 样式表，在不改变现代网页结构的情况下，实现视觉上的“2000年代化”。该设计采用模块化结构，将样式定义、注入逻辑和用户界面分离。\n\n## 指导文档对齐\n由于本项目目前处于初期阶段，尚未建立正式的 `tech.md` 或 `structure.md`，本项目将遵循标准的 Chrome 扩展开发模式。\n\n## 代码复用分析\n目前仓库为空，没有现成的代码可供复用。我们将从零开始构建。\n\n## 架构设计\n本插件将由三个核心模块组成：\n1.  **Popup (用户界面)**：提供一个简单的 HTML/CSS 开关，允许用户控制复古模式。\n2.  **Service Worker (后台逻辑)**：监听浏览器事件（如标签页更新），并根据存储的状态管理 CSS 的注入。\n3.  **Content Scripts (内容注入)**：负责实际将 `retro.css` 注入到目标网页。\n\n```mermaid\ngraph TD\n    A[Popup UI] -- 发送状态变更 --> B[chrome.storage.local]\n    B -- 状态持久化 --> C[Service Worker]\n    C -- 监听 URL 变更/存储变更 --> D[Scripting API]\n    D -- 注入/移除 --> E[retro.css]\n    E -- 作用于 --> F[Active Webpage]\n```\n\n## 组件与接口\n\n### 1. Popup 模块\n-   **目的**：提供用户控制开关。\n-   **接口**：\n    -   `onToggleChange(state)`：更新 `chrome.storage.local` 中的 `isEnabled` 标志。\n-   **依赖**：`chrome.storage` API。\n\n### 2. Service Worker (background.js)\n-   **目的**：全局状态监听与自动注入管理。\n-   **接口**：\n    -   `handleStorageChange()`：当用户在 Popup 中切换状态时，立即在当前标签页应用或移除样式。\n    -   `handleTabUpdate()`：当新页面加载时，检查状态并决定是否注入样式。\n-   **依赖**：`chrome.tabs`, `chrome.scripting`, `chrome.storage` APIs。\n\n### 3. Retro Stylesheet (retro.css)\n-   **目的**：定义所有的“手术级”复古样式。\n-   **核心选择器**：\n    -   `button`, `input[type=\"button\"]`：3D 灰色凸起。\n    -   `h1`, `h2`, `h3`：Times New Roman 字体覆盖。\n    -   `a`：强制下划线与蓝色。\n    -   `img`：CSS 滤镜叠加。\n\n## 数据模型\n\n### 状态模型\n```json\n{\n  \"isEnabled\": \"boolean\"  // 默认为 true\n}\n```\n\n## 错误处理\n\n### 错误场景\n1.  **场景 1：权限不足**\n    -   **处理**：在 `manifest.json` 中明确声明 `scripting` 和 `storage` 权限。\n    -   **用户影响**：如果权限配置不当，样式将无法注入。\n2.  **场景 2：样式冲突**\n    -   **处理**：使用极其具体且带有 `!important` 的选择器，并定期通过测试优化选择器。\n    -   **用户影响**：部分现代网页的高度复杂样式可能无法被完全覆盖。\n\n## 测试策略\n\n### 单元测试\n-   测试 `chrome.storage` 的读取与写入逻辑是否正确。\n\n### 集成测试\n-   验证从 Popup 切换状态后，Service Worker 是否能正确触发 `chrome.scripting.insertCSS`。\n\n### 端到端测试 (E2E)\n-   在主流网站（如 Google, Baidu, Wikipedia）上运行插件，通过 `cursor-browser-extension` 验证按钮、文字和滚动条是否呈现复古视觉效果。\n",
+  "fileStats": {
+    "size": 3290,
+    "lines": 79,
+    "lastModified": "2026-01-06T01:46:22.113Z"
+  },
+  "comments": []
+}
