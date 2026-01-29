@@ -12,9 +12,16 @@
         </div>
         <div class="content">
             <div class="control-group">
-                <input type="checkbox" id="retroToggle">
-                <label for="retroToggle">复古模式 (Retro Mode)</label>
+                <input type="checkbox" id="retroToggle" aria-label="复古模式开关">
+                <label for="retroToggle">复古模式</label>
+                <span class="toggle-state" id="retroState" aria-live="polite">开</span>
             </div>
+            <div class="control-group">
+                <input type="checkbox" id="crtToggle" aria-label="CRT 效果开关">
+                <label for="crtToggle">CRT 扫描线</label>
+                <span class="toggle-state" id="crtState" aria-live="polite">开</span>
+            </div>
+            
             <div class="footer">
                 Version 1.0 (C) 2026 RetroSoft
             </div>

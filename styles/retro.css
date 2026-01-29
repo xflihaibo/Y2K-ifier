@@ -150,7 +150,8 @@ select {
 html,
 body {
   /* 默认箭头光标 */
-  cursor: url("data:image/png;base64,iVBORw0KGgoAASUhEUgAAABAAAAAQBAMAAADt3eJSAAAAMFBMVEUAAAD///////////////////////////////////////////////////////////+fS9p8AAAACXBIWXMAAA7EAAAOxAGVKw4bAAAAO0lEQVQImWNgwADyMAZpEMvA0AhlsAaxBAyNUIYskGUAZcgCWYpAhlAGVyOUwRXIYARXIAtkKYIlEIYBAL96CPunm9InAAAAAElFTkSuQmCC")
+  cursor:
+    url("data:image/png;base64,iVBORw0KGgoAASUhEUgAAABAAAAAQBAMAAADt3eJSAAAAMFBMVEUAAAD///////////////////////////////////////////////////////////+fS9p8AAAACXBIWXMAAA7EAAAOxAGVKw4bAAAAO0lEQVQImWNgwADyMAZpEMvA0AhlsAaxBAyNUIYskGUAZcgCWYpAhlAGVyOUwRXIYARXIAtkKYIlEIYBAL96CPunm9InAAAAAElFTkSuQmCC")
       0 0,
     auto !important;
 }
@@ -174,13 +175,14 @@ summary,
 [href],
 [href] * {
   /* 经典的复古“小手”光标 (热点坐标调整为 6,0 以对齐食指) */
-  cursor: url("data:image/png;base64,iVBORw0KGgoAASUhEUgAAABAAAAAQBAMAAADt3eJSAAAAMFBMVEUAAAD///////////////////////////////////////////////////////////+fS9p8AAAACXBIWXMAAA7EAAAOxAGVKw4bAAAAVElEQVQImWNgwADyMAZpEMvA0AhlsAaxBAyNUIYskGUAZcgCWYpAhlAGVyOUwRXIYARXIAtkKYIlEIYBADZECPunm9InAAAAAElFTkSuQmCC")
+  cursor:
+    url("data:image/png;base64,iVBORw0KGgoAASUhEUgAAABAAAAAQBAMAAADt3eJSAAAAMFBMVEUAAAD///////////////////////////////////////////////////////////+fS9p8AAAACXBIWXMAAA7EAAAOxAGVKw4bAAAAVElEQVQImWNgwADyMAZpEMvA0AhlsAaxBAyNUIYskGUAZcgCWYpAhlAGVyOUwRXIYARXIAtkKYIlEIYBADZECPunm9InAAAAAElFTkSuQmCC")
       6 0,
     pointer !important;
 }
 
-/* 10. CRT 扫描线与显示器特效 */
-html::after {
+/* 10. CRT 扫描线与显示器特效 - 仅在 CRT 开启时生效 */
+html.y2k-crt-active::after {
   content: "" !important;
   display: block !important;
   position: fixed !important;
@@ -191,9 +193,12 @@ html::after {
   width: 100% !important;
   height: 100% !important;
   /* 基础扫描线：通过线性渐变模拟 */
-  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%),
+  background:
+    linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%),
     linear-gradient(90deg, rgba(255, 0, 0, 0.05), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.05)) !important;
-  background-size: 100% 4px, 4px 100% !important;
+  background-size:
+    100% 4px,
+    4px 100% !important;
   pointer-events: none !important;
   z-index: 2147483647 !important;
   opacity: 0.7 !important; /* 稍微加深一点透明度 */
@@ -224,12 +229,12 @@ html::after {
   }
 }
 
-html::after {
+html.y2k-crt-active::after {
   animation: crt-flicker 0.1s infinite !important; /* 加快闪烁频率 */
 }
 
-/* 11. 屏幕边缘暗角 (Vignette) */
-html::before {
+/* 11. 屏幕边缘暗角 (Vignette) - 仅在 CRT 开启时生效 */
+html.y2k-crt-active::before {
   content: "" !important;
   display: block !important;
   position: fixed !important;
@@ -267,8 +272,13 @@ html::before {
   box-shadow: 4px 4px 0 #000 !important;
 }
 
-/* 13. 跑马灯效果 (Marquee Bar) */
-#y2k-marquee-bar {
+/* 13. 跑马灯效果 (Marquee Bar) - 仅在 CRT 开启时显示 */
+/* 当 CRT 关闭时，隐藏跑马灯 */
+html:not(.y2k-crt-active) #y2k-marquee-bar {
+  display: none !important;
+}
+
+html.y2k-crt-active #y2k-marquee-bar {
   all: initial !important;
   position: fixed !important;
   top: 0 !important;
@@ -304,8 +314,8 @@ html::before {
   }
 }
 
-/* 为跑马灯腾出顶部空间 */
-html.y2k-mode-active {
+/* 为跑马灯腾出顶部空间 - 仅在 CRT 开启时 */
+html.y2k-mode-active.y2k-crt-active {
   margin-top: 24px !important;
 }
 

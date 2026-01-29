@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Y2K-ifier",
-  "version": "1.0",
+  "version": "1.0.1",
   "description": "Surgically transforms modern web pages into a 2000s retro aesthetic.",
   "permissions": ["scripting", "storage", "tabs", "activeTab"],
   "host_permissions": ["<all_urls>"],
@@ -12,6 +12,7 @@
   },
   "action": {
     "default_popup": "popup/popup.html",
+    "default_title": "Y2K-ifier：复古模式",
     "default_icon": {
       "16": "icons/icon16.png",
       "48": "icons/icon48.png",

@@ -36,9 +36,22 @@ body {
 }
 
 .control-group {
-  margin-bottom: 15px;
+  margin-bottom: 12px;
   display: flex;
   align-items: center;
+  gap: 6px;
+}
+
+.control-group label {
+  margin-left: 0;
+  flex: 1;
+  min-width: 0;
+}
+
+.toggle-state {
+  font-size: 11px;
+  color: #000;
+  min-width: 14px;
 }
 
 label {
