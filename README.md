@@ -28,6 +28,11 @@
 *   **怀旧功能挂件**：内置“跑马灯”公告条与“正在建设中”像素挂件，完美还原 2000 年代个人主页的视觉灵魂。
 *   **经典滚动条**：重塑 Webkit 滚动条为 Windows 2000 风格的灰色方块。
 
+### 4. 🖼️ 主题页（选项页）
+*   **背景**：使用本地壁纸 `public/images/xp.jpeg`（构建后为 `dist/images/xp.jpeg`），需自行将图片放入该路径后构建。
+*   **搜索栏**：一行式布局——左侧**搜索引擎选择**（谷歌 / 必应 / 百度），中间**搜索输入框**，右侧**搜索按钮**；选择会持久化到 `chrome.storage.local.optionsSearchEngine`。
+*   **打开方式**：弹窗内点击「打开主题页 (XP 壁纸 + 搜索)」，或扩展图标右键 →「选项」，或 `chrome://extensions` → 本扩展「详情」→「扩展程序选项」。
+
 ---
 
 ## 🛠️ 技术架构
@@ -58,15 +63,22 @@
 ```
 ├── public/                 # 静态资源，构建时原样复制到 dist
 │   ├── icons/              # 扩展图标 (16×16, 48×48, 128×128 PNG)
+│   ├── images/             # 主题页壁纸，需放入 xp.jpeg
+│   │   └── README.md       # 说明：将主题页背景图保存为 xp.jpeg
 │   └── styles/retro.css    # 注入页面的复古样式表
 ├── src/
 │   ├── background/         # Service Worker (TypeScript)
 │   │   └── background.ts
-│   └── popup/              # 弹窗 (Vue 3 + TypeScript)
-│       ├── popup.html      # 弹窗 HTML 入口
+│   ├── popup/              # 弹窗 (Vue 3 + TypeScript)
+│   │   ├── popup.html      # 弹窗 HTML 入口
+│   │   ├── main.ts         # Vue 挂载入口
+│   │   ├── App.vue         # 弹窗根组件（复古/CRT 开关 + 打开主题页）
+│   │   └── popup.css       # 弹窗样式
+│   └── options/            # 主题页（选项页：壁纸 + 搜索栏）
+│       ├── options.html    # 选项页 HTML 入口
 │       ├── main.ts         # Vue 挂载入口
-│       ├── App.vue         # 弹窗根组件
-│       └── popup.css       # 弹窗样式
+│       ├── App.vue         # 主题页组件（搜索引擎选择 + 输入框 + 搜索）
+│       └── options.css     # 主题页样式
 ├── vite.config.ts          # Vite + web-extension 插件配置
 ├── tsconfig.json
 └── package.json
@@ -74,7 +86,10 @@
 
 ### 说明
 *   **`dist/manifest.json` 的打包来源**：由 **`vite.config.ts`** 里 `webExtension({ manifest: { ... } })` 生成，扩展的 `name`、`version`、`description` 从 **`package.json`** 读取，改版本请改 `package.json` 的 `version` 后重新 `npm run build`。
-*   **构建以 `src/` 与 `public/` 为准**，加载扩展请使用 **`dist/`** 目录。图标在 `public/icons/`（PNG 16×16、48×48、128×128），复古样式在 `public/styles/retro.css`。
+*   **构建以 `src/` 与 `public/` 为准**，加载扩展请使用 **`dist/`** 目录。
+*   **图标**：`public/icons/`（PNG 16×16、48×48、128×128）。
+*   **复古样式**：`public/styles/retro.css`。
+*   **主题页壁纸**：将背景图保存为 **`public/images/xp.jpeg`** 后构建，主题页会使用该图；若未放置则背景为回退色。
 
 ---
 
@@ -83,6 +98,17 @@
 *   **单一用途合规**：本插件专注于网页视觉主题变换，不包含任何无关的功能捆绑。
 *   **不收集任何数据**：本插件纯前端运行，没有任何网络请求发送至第三方服务器。
 *   **权限最小化**：仅申请必要的 `scripting` 和 `storage` 权限。
+
+---
+
+## 📋 最近更新
+
+*   **主题页（选项页）**
+    *   背景使用本地壁纸 `public/images/xp.jpeg`，需自行放入后构建。
+    *   搜索栏一行式：左侧搜索引擎选择（谷歌 / 必应 / 百度），中间输入框，右侧搜索按钮；选择会持久化。
+    *   弹窗内新增「打开主题页 (XP 壁纸 + 搜索)」按钮，可一键打开主题页。
+*   **弹窗**：保留复古模式、CRT 扫描线开关，新增打开主题页入口。
+*   **文档**：README 与 `public/images/README.md` 已同步上述说明。
 
 ---
 

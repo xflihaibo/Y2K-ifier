@@ -32,6 +32,10 @@ async function onCrtChange() {
   await chrome.storage.local.set({ crtEnabled: crtEnabled.value })
   chrome.runtime.sendMessage({ action: 'toggleCRT', state: crtEnabled.value })
 }
+
+function openThemePage() {
+  chrome.runtime.openOptionsPage()
+}
 </script>
 
 <template>
@@ -61,6 +65,11 @@ async function onCrtChange() {
         >
         <label for="crtToggle">CRT 扫描线</label>
         <span class="toggle-state" aria-live="polite">{{ crtStateText }}</span>
+      </div>
+      <div class="control-group">
+        <button type="button" class="link-btn" @click="openThemePage">
+          打开主题页 (XP 壁纸 + 搜索)
+        </button>
       </div>
       <div class="footer">
         Version 1.0 (C) 2026 RetroSoft

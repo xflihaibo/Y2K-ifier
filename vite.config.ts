@@ -34,6 +34,10 @@ export default defineConfig({
         background: {
           service_worker: 'src/background/background.ts',
         },
+        options_ui: {
+          page: 'src/options/options.html',
+          open_in_tab: true,
+        },
         web_accessible_resources: [
           {
             resources: ['styles/retro.css'],
