@@ -3,3 +3,10 @@
 .spec-workflow
 .specstory
 .DS_Store
+
+# Vite + Node
+node_modules
+dist
+*.local
+.env
+.env.*

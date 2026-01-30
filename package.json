@@ -1,0 +1,21 @@
+{
+  "name": "y2k-ifier",
+  "version": "1.0.2",
+  "description": "Surgically transforms modern web pages into a 2000s retro aesthetic.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite build --watch",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "vue": "^3.4.21"
+  },
+  "devDependencies": {
+    "@samrum/vite-plugin-web-extension": "^4.0.2",
+    "@types/chrome": "^0.0.268",
+    "@vitejs/plugin-vue": "^5.0.4",
+    "typescript": "~5.4.0",
+    "vite": "^5.2.11"
+  }
+}

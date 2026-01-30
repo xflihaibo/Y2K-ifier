@@ -32,8 +32,10 @@
 
 ## 🛠️ 技术架构
 
+*   **构建**: Vite + Vue 3 + TypeScript，使用 `@samrum/vite-plugin-web-extension` 打包为 Chrome 扩展。
 *   **内核**: Manifest V3 (Chrome Extension API)
-*   **注入引擎**: 使用 `background.js` (Service Worker) 配合 `chrome.scripting` 实现动态样式与脚本注入。
+*   **注入引擎**: 使用 `src/background/background.ts` (Service Worker) 配合 `chrome.scripting` 实现动态样式与脚本注入。
+*   **弹窗**: Vue 3 单文件组件 (SFC)，`src/popup/` 下 popup 入口与 `App.vue`。
 *   **样式控制**: 高优先级的 `retro.css` 结合 `all: initial` 隔离技术，确保对复杂站点的强力覆盖。
 *   **动态特效**: 采用 **像素级内联 SVG 动画**，确保零外部资源依赖且 100% 还原动态效果。
 
@@ -41,18 +43,38 @@
 
 ## 📦 安装与开发
 
-### 开发模式安装
-1.  下载本仓库代码到本地。
-2.  打开 Chrome 浏览器，访问 `chrome://extensions/`。
-3.  开启右上角的 **“开发者模式”**。
-4.  点击 **“加载已解压的扩展程序”**，选择本项目文件夹。
+### 环境要求
+*   Node.js 18+
+*   npm / pnpm
 
-### 文件结构
-*   `manifest.json`: 插件配置文件。
-*   `background.js`: 负责状态管理与样式注入的核心 Service Worker。
-*   `styles/retro.css`: 定义所有复古视觉规则的超级样式表。
-*   `popup/`: 用户交互界面（采用 Win2000 窗口风格设计）。
-*   `icons/`: 包含各种尺寸的复古图标（需为 PNG，尺寸分别为 16×16、48×48、128×128 像素；若图标不显示，请检查文件存在且格式正确后重新加载扩展）。
+### 构建与加载扩展
+1.  安装依赖：`npm install`
+2.  构建扩展：`npm run build`（产物在 `dist/` 目录）
+3.  开发监听：`npm run dev`（监听源码变化并持续构建）
+4.  打开 Chrome，访问 `chrome://extensions/`，开启 **“开发者模式”**。
+5.  点击 **“加载已解压的扩展程序”**，选择本项目下的 **`dist`** 文件夹。
+
+### 项目结构（Vite + Vue + TS）
+```
+├── public/                 # 静态资源，构建时原样复制到 dist
+│   ├── icons/              # 扩展图标 (16×16, 48×48, 128×128 PNG)
+│   └── styles/retro.css    # 注入页面的复古样式表
+├── src/
+│   ├── background/         # Service Worker (TypeScript)
+│   │   └── background.ts
+│   └── popup/              # 弹窗 (Vue 3 + TypeScript)
+│       ├── popup.html      # 弹窗 HTML 入口
+│       ├── main.ts         # Vue 挂载入口
+│       ├── App.vue         # 弹窗根组件
+│       └── popup.css       # 弹窗样式
+├── vite.config.ts          # Vite + web-extension 插件配置
+├── tsconfig.json
+└── package.json
+```
+
+### 说明
+*   **`dist/manifest.json` 的打包来源**：由 **`vite.config.ts`** 里 `webExtension({ manifest: { ... } })` 生成，扩展的 `name`、`version`、`description` 从 **`package.json`** 读取，改版本请改 `package.json` 的 `version` 后重新 `npm run build`。
+*   **构建以 `src/` 与 `public/` 为准**，加载扩展请使用 **`dist/`** 目录。图标在 `public/icons/`（PNG 16×16、48×48、128×128），复古样式在 `public/styles/retro.css`。
 
 ---
 
