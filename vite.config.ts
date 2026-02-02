@@ -12,7 +12,7 @@ export default defineConfig({
     webExtension({
       manifest: {
         manifest_version: 3,
-        name: 'Y2K-ifier',
+        name: 'Y2K-ifier: 90s Retro Filter & Web Nostalgia (Vaporwave/Glitch)',
         version: pkg.version,
         description: pkg.description,
         permissions: ['scripting', 'storage', 'tabs', 'activeTab'],
