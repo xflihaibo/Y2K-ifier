@@ -1,30 +1,37 @@
 # OpenMemory - Y2K-ifier
 
 ## Overview
-**Y2K-ifier** 是一款 Google Chrome 扩展插件（Manifest V3），通过“手术级”视觉重塑将现代网页转换为 2000 年代的复古风格。
+**Y2K-ifier** 是一款 Google Chrome 扩展插件（Manifest V3），通过“手术级”视觉重塑将现代网页转换为 2000 年代复古风格，并提供主题页（XP 壁纸 + 搜索 + 怀旧助手）、多语言与快捷键。
 
 ## Architecture
-- **Manifest V3**: 使用 Service Worker (`background.js`) 管理全局状态。
-- **Surgical CSS Injection**: 利用 `chrome.scripting` API 在不破坏布局的前提下注入 `retro.css`。
-- **Persistent Storage**: 使用 `chrome.storage.local` 持久化“复古模式”开关状态。
-- **Retro UI**: Popup 界面采用 Windows 2000 风格设计。
+- **Manifest V3**: Service Worker (`background/background.ts`) 管理注入、存储与 `chrome.commands`。
+- **Surgical CSS Injection**: `chrome.scripting` 注入 `public/styles/retro.css`。
+- **Storage**: `chrome.storage.local` 持久化 `isEnabled`、`crtEnabled`、`optionsSearchEngine`、`locale`。
+- **Retro UI**: Popup 与 Newtab 均为 Vue 3 + Win2000/XP 风格；多语言 vue-i18n，文案在 `src/locales/`。
 
 ## User Defined Namespaces
-- frontend: 包含 Popup UI 和 CSS 样式逻辑。
-- extension: 包含 Manifest 配置和 Service Worker 逻辑。
+- frontend: Popup、Newtab、locales、i18n。
+- extension: Manifest、background、retro.css。
 
 ## Components
-### [Component] - Popup UI
-- **Location**: `popup/`
-- **Purpose**: 提供用户控制开关，采用 Win2000 风格。
-- **Services**: `chrome.storage`, `chrome.runtime`.
+### [Component] - Popup
+- **Location**: `src/popup/`
+- **Purpose**: 复古/CRT 开关、打开主题页按钮与快捷键提示、中/英切换。
+
+### [Component] - Newtab（主题页 / 选项页）
+- **Location**: `src/newtab/`
+- **Purpose**: XP 壁纸 + 搜索栏 + 怀旧助手（NostalgicAgent）；与 options_ui 共用，不覆盖 chrome://newtab。
+
+### [Component] - NostalgicAgent
+- **Location**: `src/newtab/components/NostalgicAgent.vue`
+- **Purpose**: 90s 风格气泡与角色、预设话术、“随机推荐一个书签”（chrome.bookmarks）。
 
 ### [Component] - Retro Stylesheet
-- **Location**: `styles/retro.css`
-- **Purpose**: 定义核心视觉变换（3D 按钮、衬线标题、像素化图片、复古滚动条）。
+- **Location**: `public/styles/retro.css`
+- **Purpose**: 3D 按钮、衬线标题、像素化图片、CRT/跑马灯等复古视觉。
 
 ## Patterns
-- **Surgical Injection**: 仅修改装饰性 CSS 属性（border, color, font, filter），避免修改 layout 属性（width, height, flex）。
-- **State-driven Injection**: Service Worker 监听存储和标签页更新，动态同步 CSS 状态。
-- **Physical DOM Injection**: 对于复杂页面（如百度），直接插入实体 `<div>` 标签以绕过 CSS 伪元素层级限制，并使用 `all: initial` 隔离样式干扰。
-- **Pixel-perfect SVG Animation**: 使用行内 SVG 动画替代可能损坏的 Base64 GIF，确保在所有浏览器中 100% 还原复古动态效果。
+- **Surgical Injection**: 仅改装饰性 CSS，不改布局。
+- **State-driven Injection**: background 监听 storage 与 tabs.onUpdated，同步注入/移除。
+- **i18n**: vue-i18n runtime 构建（避免 CSP unsafe-eval）；locale 存 storage，popup/newtab 启动时读取。
+- **Commands**: `open_theme` 默认 Alt+Shift+Y，在 background 顶部注册 `chrome.commands.onCommand`。

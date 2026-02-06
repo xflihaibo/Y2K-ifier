@@ -2,7 +2,15 @@
  * Y2K-ifier Background Service Worker
  */
 
+import { getNewtabUrl } from '@/constants'
+
 const RETRO_CSS_FILE = 'styles/retro.css'
+
+chrome.commands.onCommand.addListener((command) => {
+  if (command === 'open_theme') {
+    chrome.tabs.create({ url: getNewtabUrl() })
+  }
+})
 
 function isRestrictedURL(url: string | undefined): boolean {
   if (!url) return true

@@ -1,26 +1,36 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { getStoredLocale } from '@/i18n'
+import NostalgicAgent from './components/NostalgicAgent.vue'
+
+const { t, locale } = useI18n()
 
 const SEARCH_ENGINES = [
-  { id: 'google', name: '谷歌', url: 'https://www.google.com/search?q=' },
-  { id: 'bing', name: '必应', url: 'https://www.bing.com/search?q=' },
-  { id: 'baidu', name: '百度', url: 'https://www.baidu.com/s?wd=' },
-] as const
+  { id: 'google' as const },
+  { id: 'bing' as const },
+  { id: 'baidu' as const },
+]
+
+const urls: Record<string, string> = {
+  google: 'https://www.google.com/search?q=',
+  bing: 'https://www.bing.com/search?q=',
+  baidu: 'https://www.baidu.com/s?wd=',
+}
 
 const query = ref('')
 const selectedId = ref('google')
 const blissBg = `url(${chrome.runtime.getURL('images/xp.jpeg')})`
 
-const searchUrl = computed(() => {
-  const engine = SEARCH_ENGINES.find((e) => e.id === selectedId.value)
-  return engine?.url ?? SEARCH_ENGINES[0].url
-})
+const searchUrl = computed(() => urls[selectedId.value] ?? urls.google)
 
 onMounted(async () => {
   const data = await chrome.storage.local.get('optionsSearchEngine')
   if (data.optionsSearchEngine && SEARCH_ENGINES.some((e) => e.id === data.optionsSearchEngine)) {
     selectedId.value = data.optionsSearchEngine
   }
+  const stored = await getStoredLocale()
+  locale.value = stored
 })
 
 async function onEngineChange() {
@@ -47,26 +57,27 @@ function onKeydown(e: KeyboardEvent) {
         <select
           v-model="selectedId"
           class="engine-select"
-          aria-label="搜索引擎"
+          :aria-label="t('search.ariaEngine')"
           @change="onEngineChange"
         >
           <option v-for="e in SEARCH_ENGINES" :key="e.id" :value="e.id">
-            {{ e.name }}
+            {{ t(`searchEngines.${e.id}`) }}
           </option>
         </select>
         <input
           v-model="query"
           type="text"
           class="search-input"
-          placeholder="在 Web 上搜索..."
+          :placeholder="t('search.placeholder')"
           autocomplete="off"
           @keydown="onKeydown"
         >
         <button type="button" class="search-btn" @click="doSearch">
-          搜索
+          {{ t('search.button') }}
         </button>
       </div>
     </div>
+    <NostalgicAgent />
   </div>
 </template>
 

@@ -15,7 +15,7 @@ export default defineConfig({
         name: 'Y2K-ifier: 90s Retro Filter & Web Nostalgia (Vaporwave/Glitch)',
         version: pkg.version,
         description: pkg.description,
-        permissions: ['scripting', 'storage', 'tabs', 'activeTab'],
+        permissions: ['scripting', 'storage', 'tabs', 'activeTab', 'bookmarks'],
         host_permissions: ['<all_urls>'],
         icons: {
           '16': 'icons/icon16.png',
@@ -35,8 +35,14 @@ export default defineConfig({
           service_worker: 'src/background/background.ts',
         },
         options_ui: {
-          page: 'src/options/options.html',
+          page: 'src/newtab/newtab.html',
           open_in_tab: true,
+        },
+        commands: {
+          open_theme: {
+            suggested_key: { default: 'Alt+Shift+Y', mac: 'Alt+Shift+Y' },
+            description: 'Open Y2K theme page in a new tab',
+          },
         },
         web_accessible_resources: [
           {
@@ -50,6 +56,8 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
+      // 扩展 CSP 禁止 unsafe-eval，使用 runtime 构建避免 vue-i18n 运行时编译 (new Function)
+      'vue-i18n': resolve(__dirname, 'node_modules/vue-i18n/dist/vue-i18n.runtime.esm-bundler.js'),
     },
   },
   build: {

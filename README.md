@@ -28,10 +28,11 @@
 *   **怀旧功能挂件**：内置“跑马灯”公告条与“正在建设中”像素挂件，完美还原 2000 年代个人主页的视觉灵魂。
 *   **经典滚动条**：重塑 Webkit 滚动条为 Windows 2000 风格的灰色方块。
 
-### 4. 🖼️ 主题页（选项页）
-*   **背景**：使用本地壁纸 `public/images/xp.jpeg`（构建后为 `dist/images/xp.jpeg`），需自行将图片放入该路径后构建。
-*   **搜索栏**：一行式布局——左侧**搜索引擎选择**（谷歌 / 必应 / 百度），中间**搜索输入框**，右侧**搜索按钮**；选择会持久化到 `chrome.storage.local.optionsSearchEngine`。
-*   **打开方式**：弹窗内点击「打开主题页 (XP 壁纸 + 搜索)」，或扩展图标右键 →「选项」，或 `chrome://extensions` → 本扩展「详情」→「扩展程序选项」。
+### 4. 🖼️ 主题页（Y2K 新标签页）
+*   **背景**：使用本地壁纸 `public/images/xp.jpeg`，需自行将图片放入该路径后构建。
+*   **搜索栏**：搜索引擎选择（谷歌 / 必应 / 百度）+ 搜索输入框 + 搜索按钮；选择持久化到 `chrome.storage.local.optionsSearchEngine`。
+*   **怀旧助手**：右下角 90s 风格小助手，预设话术 +「随机推荐一个书签」；后续可扩展为 RAG 助手。
+*   **打开方式**：弹窗内「打开主题页」按钮，或快捷键 **Alt+Shift+Y**（Mac：Option+Shift+Y）；扩展选项页也指向该页面。新标签页不覆盖，保持用户本地 `chrome://newtab/`。
 
 ---
 
@@ -40,7 +41,8 @@
 *   **构建**: Vite + Vue 3 + TypeScript，使用 `@samrum/vite-plugin-web-extension` 打包为 Chrome 扩展。
 *   **内核**: Manifest V3 (Chrome Extension API)
 *   **注入引擎**: 使用 `src/background/background.ts` (Service Worker) 配合 `chrome.scripting` 实现动态样式与脚本注入。
-*   **弹窗**: Vue 3 单文件组件 (SFC)，`src/popup/` 下 popup 入口与 `App.vue`。
+*   **弹窗**: Vue 3 SFC，`src/popup/`；**主题页**: `src/newtab/`（Vue 3 + 怀旧助手组件），与选项页共用同一页面。
+*   **多语言**: vue-i18n，中/英文案在 `src/locales/`；语言存 `chrome.storage.local.locale`。
 *   **样式控制**: 高优先级的 `retro.css` 结合 `all: initial` 隔离技术，确保对复杂站点的强力覆盖。
 *   **动态特效**: 采用 **像素级内联 SVG 动画**，确保零外部资源依赖且 100% 还原动态效果。
 
@@ -69,16 +71,13 @@
 ├── src/
 │   ├── background/         # Service Worker (TypeScript)
 │   │   └── background.ts
-│   ├── popup/              # 弹窗 (Vue 3 + TypeScript)
-│   │   ├── popup.html      # 弹窗 HTML 入口
-│   │   ├── main.ts         # Vue 挂载入口
-│   │   ├── App.vue         # 弹窗根组件（复古/CRT 开关 + 打开主题页）
-│   │   └── popup.css       # 弹窗样式
-│   └── options/            # 主题页（选项页：壁纸 + 搜索栏）
-│       ├── options.html    # 选项页 HTML 入口
-│       ├── main.ts         # Vue 挂载入口
-│       ├── App.vue         # 主题页组件（搜索引擎选择 + 输入框 + 搜索）
-│       └── options.css     # 主题页样式
+│   ├── popup/              # 弹窗 (Vue 3)
+│   │   ├── popup.html, main.ts, App.vue, popup.css
+│   ├── newtab/             # 主题页（壁纸 + 搜索 + 怀旧助手），兼作选项页
+│   │   ├── newtab.html, main.ts, App.vue, newtab.css
+│   │   └── components/NostalgicAgent.vue  # 怀旧助手
+│   ├── locales/            # 多语言 en.ts, zh-CN.ts
+│   └── i18n.ts             # vue-i18n 与 locale 存储
 ├── vite.config.ts          # Vite + web-extension 插件配置
 ├── tsconfig.json
 └── package.json
@@ -97,18 +96,16 @@
 
 *   **单一用途合规**：本插件专注于网页视觉主题变换，不包含任何无关的功能捆绑。
 *   **不收集任何数据**：本插件纯前端运行，没有任何网络请求发送至第三方服务器。
-*   **权限最小化**：仅申请必要的 `scripting` 和 `storage` 权限。
+*   **权限最小化**：`scripting`、`storage`、`tabs`、`activeTab`、`bookmarks`（书签仅用于怀旧助手随机推荐，本地读取）。
 
 ---
 
-## 📋 最近更新
+## 📋 当前功能（基础开发完成）
 
-*   **主题页（选项页）**
-    *   背景使用本地壁纸 `public/images/xp.jpeg`，需自行放入后构建。
-    *   搜索栏一行式：左侧搜索引擎选择（谷歌 / 必应 / 百度），中间输入框，右侧搜索按钮；选择会持久化。
-    *   弹窗内新增「打开主题页 (XP 壁纸 + 搜索)」按钮，可一键打开主题页。
-*   **弹窗**：保留复古模式、CRT 扫描线开关，新增打开主题页入口。
-*   **文档**：README 与 `public/images/README.md` 已同步上述说明。
+*   **弹窗**：复古模式 / CRT 扫描线开关；打开主题页（整行按钮 + 快捷键提示）；中/英语言切换。
+*   **主题页（newtab）**：XP 壁纸 + 搜索栏（谷歌/必应/百度）+ 怀旧助手（预设话术 + 随机书签）；与选项页共用，不覆盖浏览器新标签页。
+*   **多语言**：中/英，vue-i18n + `chrome.storage.local.locale`。
+*   **快捷键**：Alt+Shift+Y（Mac Option+Shift+Y）打开主题页，可在 `chrome://extensions` → 键盘快捷方式 中修改。
 
 ---
 
