@@ -15,7 +15,7 @@ export default defineConfig({
         name: 'Y2K-ifier: 90s Retro Filter & Web Nostalgia (Vaporwave/Glitch)',
         version: pkg.version,
         description: pkg.description,
-        permissions: ['scripting', 'storage', 'tabs', 'activeTab', 'bookmarks', 'downloads'],
+        permissions: ['scripting', 'storage', 'tabs', 'activeTab', 'bookmarks'],
         host_permissions: ['<all_urls>'],
         icons: {
           '16': 'icons/icon16.png',

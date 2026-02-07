@@ -8,7 +8,6 @@ const { t, locale } = useI18n()
 
 const retroEnabled = ref(true)
 const crtEnabled = ref(true)
-const screenshotStatus = ref<'idle' | 'saving' | 'ok' | 'error'>('idle')
 
 const retroStateText = computed(() => (retroEnabled.value ? t('common.on') : t('common.off')))
 const crtStateText = computed(() => (crtEnabled.value ? t('common.on') : t('common.off')))
@@ -42,71 +41,6 @@ function openThemePage() {
 
 async function setLocale(id: LocaleId) {
   await setStoredLocale(id)
-}
-
-function isRestrictedUrl(url: string | undefined): boolean {
-  if (!url) return true
-  return (
-    url.startsWith('chrome://') ||
-    url.startsWith('edge://') ||
-    url.startsWith('about:') ||
-    url.startsWith('chrome-extension://') ||
-    url.startsWith('https://chrome.google.com/webstore')
-  )
-}
-
-function addRetroFrame(dataUrl: string): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const img = new Image()
-    img.crossOrigin = 'anonymous'
-    img.onload = () => {
-      const pad = 12
-      const w = img.width + pad * 2
-      const h = img.height + pad * 2
-      const canvas = document.createElement('canvas')
-      canvas.width = w
-      canvas.height = h
-      const ctx = canvas.getContext('2d')
-      if (!ctx) {
-        resolve(dataUrl)
-        return
-      }
-      ctx.fillStyle = '#c0c0c0'
-      ctx.fillRect(0, 0, w, h)
-      ctx.strokeStyle = '#808080'
-      ctx.lineWidth = 2
-      ctx.strokeRect(1, 1, w - 2, h - 2)
-      ctx.strokeStyle = '#ffffff'
-      ctx.strokeRect(4, 4, w - 8, h - 8)
-      ctx.drawImage(img, pad, pad, img.width, img.height)
-      resolve(canvas.toDataURL('image/png'))
-    }
-    img.onerror = () => resolve(dataUrl)
-    img.src = dataUrl
-  })
-}
-
-async function saveRetroScreenshot() {
-  screenshotStatus.value = 'saving'
-  try {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
-    if (!tab?.id || !tab.url) {
-      screenshotStatus.value = 'error'
-      return
-    }
-    if (isRestrictedUrl(tab.url)) {
-      screenshotStatus.value = 'error'
-      return
-    }
-    const dataUrl = await chrome.tabs.captureVisibleTab(tab.windowId ?? undefined, { format: 'png' })
-    const withFrame = await addRetroFrame(dataUrl)
-    const filename = `y2k-screenshot-${Date.now()}.png`
-    await chrome.downloads.download({ url: withFrame, filename, saveAs: true })
-    screenshotStatus.value = 'ok'
-  } catch {
-    screenshotStatus.value = 'error'
-  }
-  setTimeout(() => { screenshotStatus.value = 'idle' }, 2000)
 }
 </script>
 
@@ -144,18 +78,6 @@ async function saveRetroScreenshot() {
         </button>
         <span class="shortcut-hint">{{ t('popup.openThemeShortcut') }}</span>
       </div>
-      <div class="control-group">
-        <button
-          type="button"
-          class="link-btn"
-          :disabled="screenshotStatus === 'saving'"
-          @click="saveRetroScreenshot"
-        >
-          {{ screenshotStatus === 'saving' ? '…' : t('popup.saveRetroScreenshot') }}
-        </button>
-        <span v-if="screenshotStatus === 'ok'" class="screenshot-status status-ok">{{ t('popup.screenshotSuccess') }}</span>
-        <span v-if="screenshotStatus === 'error'" class="screenshot-status status-err">{{ t('popup.screenshotError') }}</span>
-      </div>
       <div class="lang-row">
         <span class="lang-label">{{ t('settings.language') }}:</span>
         <button type="button" class="lang-btn" :class="{ active: locale === 'en' }" @click="setLocale('en')">
@@ -188,12 +110,6 @@ async function saveRetroScreenshot() {
   text-align: center;
   line-height: 1.3;
 }
-.screenshot-status {
-  font-size: 11px;
-  margin-left: 4px;
-}
-.status-ok { color: #006400; }
-.status-err { color: #8b0000; }
 .lang-row {
   display: flex;
   align-items: center;
