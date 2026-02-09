@@ -20,17 +20,30 @@ const urls: Record<string, string> = {
 
 const query = ref('')
 const selectedId = ref('google')
+const showRitualBanner = ref(false)
 const blissBg = `url(${chrome.runtime.getURL('images/xp.jpeg')})`
 
 const searchUrl = computed(() => urls[selectedId.value] ?? urls.google)
 
+async function ensureY2kActiveDay() {
+  const today = new Date().toDateString()
+  const res = await chrome.storage.local.get({ y2kActiveDays: [] as string[] })
+  let days = res.y2kActiveDays || []
+  if (days.includes(today)) return
+  days.push(today)
+  if (days.length > 365) days = days.slice(-365)
+  await chrome.storage.local.set({ y2kActiveDays: days })
+}
+
 onMounted(async () => {
+  showRitualBanner.value = typeof window !== 'undefined' && window.location.search.includes('ritual=1')
   const data = await chrome.storage.local.get('optionsSearchEngine')
   if (data.optionsSearchEngine && SEARCH_ENGINES.some((e) => e.id === data.optionsSearchEngine)) {
     selectedId.value = data.optionsSearchEngine
   }
   const stored = await getStoredLocale()
   locale.value = stored
+  await ensureY2kActiveDay()
 })
 
 async function onEngineChange() {
@@ -52,6 +65,9 @@ function onKeydown(e: KeyboardEvent) {
 
 <template>
   <div class="xp-theme" :style="{ backgroundImage: blissBg }">
+    <div v-if="showRitualBanner" class="ritual-banner">
+      <span class="ritual-banner-text">{{ t('ritual.message') }}</span>
+    </div>
     <div class="search-wrap">
       <div class="search-row">
         <select
@@ -172,5 +188,27 @@ function onKeydown(e: KeyboardEvent) {
 
 .search-btn:active {
   background: #0047c4;
+}
+
+.ritual-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  padding: 12px 20px;
+  background-color: #c0c0c0;
+  border-bottom: 2px solid #808080;
+  border-left: 2px solid #ffffff;
+  border-right: 2px solid #808080;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  font-family: "MS Sans Serif", Arial, sans-serif;
+  font-size: 14px;
+  color: #000;
+  text-align: center;
+}
+
+.ritual-banner-text {
+  display: block;
 }
 </style>

@@ -15,7 +15,7 @@ export default defineConfig({
         name: 'Y2K-ifier: 90s Retro Filter & Web Nostalgia (Vaporwave/Glitch)',
         version: pkg.version,
         description: pkg.description,
-        permissions: ['scripting', 'storage', 'tabs', 'activeTab', 'bookmarks'],
+        permissions: ['scripting', 'storage', 'tabs', 'activeTab', 'bookmarks', 'alarms', 'clipboardRead'],
         host_permissions: ['<all_urls>'],
         icons: {
           '16': 'icons/icon16.png',
@@ -44,6 +44,13 @@ export default defineConfig({
             description: 'Open Y2K theme page in a new tab',
           },
         },
+        content_scripts: [
+          {
+            matches: ['<all_urls>'],
+            js: ['src/content.ts'],
+            run_at: 'document_idle',
+          },
+        ],
         web_accessible_resources: [
           {
             resources: ['styles/retro.css'],

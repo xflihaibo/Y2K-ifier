@@ -1,6 +1,6 @@
 {
   "name": "Y2K-ifier: 90s Retro Filter & Web Nostalgia (Vaporwave/Glitch)",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Turn the boring modern web into a 1999 fever dream. One-click retro filters, glitch effects, and pure Y2K aesthetic.",
   "type": "module",
   "scripts": {
@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "crypto-js": "^4.2.0",
     "vue": "^3.4.21",
     "vue-i18n": "^9.14.4"
   },

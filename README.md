@@ -34,6 +34,12 @@
 *   **怀旧助手**：右下角 90s 风格小助手，预设话术 +「随机推荐一个书签」；后续可扩展为 RAG 助手。
 *   **打开方式**：弹窗内「打开主题页」按钮，或快捷键 **Alt+Shift+Y**（Mac：Option+Shift+Y）；扩展选项页也指向该页面。新标签页不覆盖，保持用户本地 `chrome://newtab/`。
 
+### 5. 📌 粘性功能（增强留存）
+*   **陪伴天数与里程碑**：每次打开弹窗或主题页会记录当日为「活跃日」，弹窗内显示累计天数（如「7 天」）及当前里程碑徽章（拨号新手 → 网虫 → 冲浪达人 → 老网民 → 骨灰级 → 一年之约），风格与 Win2000 灰框一致。数据存于 `chrome.storage.local.y2kActiveDays`（日期字符串数组，最多 365 条）。
+*   **晨间问候**：每天首次打开弹窗时显示一条可关闭的 Y2K 风格问候（如「早，今天也一起复古吧 ✨」），关闭后当日不再显示；关闭日期存于 `chrome.storage.local.y2kGreetingClosedDate`。
+*   **每日归航时刻**：在弹窗中可设置每日提醒时间（如 18:00），到点后扩展会打开主题页并显示「归航时刻到了，辛苦了。」；每次触发会记录日期。**归航数据分析**：弹窗内展示「本月归航 X 次」「连续归航 X 天」。需 `alarms` 权限；数据存于 `chrome.storage.local.y2kRitualDates`、`y2kRitualTime`、`y2kRitualEnabled`。
+*   **今日足迹**：由 **background** 记录当日浏览数据（`y2kBrowsingData`）：切 tab 时累计**停留时长**，**content script** 在页面内统计**点击、滚动、输入字数**并定期上报。弹窗内展示今日记录（标题/域名、时长、点击数），点击可在新标签页打开。Y2K 灰框列表风格；数据仅存本地。
+
 ---
 
 ## 🛠️ 技术架构
@@ -69,8 +75,9 @@
 │   │   └── README.md       # 说明：将主题页背景图保存为 xp.jpeg
 │   └── styles/retro.css    # 注入页面的复古样式表
 ├── src/
-│   ├── background/         # Service Worker (TypeScript)
+│   ├── background/         # Service Worker (TypeScript)：复古注入、归航闹钟、今日足迹记录
 │   │   └── background.ts
+│   ├── content.ts          # Content Script：页面内点击/滚动/输入统计，上报至 background
 │   ├── popup/              # 弹窗 (Vue 3)
 │   │   ├── popup.html, main.ts, App.vue, popup.css
 │   ├── newtab/             # 主题页（壁纸 + 搜索 + 怀旧助手），兼作选项页
@@ -96,15 +103,15 @@
 
 *   **单一用途合规**：本插件专注于网页视觉主题变换，不包含任何无关的功能捆绑。
 *   **不收集任何数据**：本插件纯前端运行，没有任何网络请求发送至第三方服务器。
-*   **权限最小化**：`scripting`、`storage`、`tabs`、`activeTab`、`bookmarks`（书签仅用于怀旧助手随机推荐，本地读取）。
+*   **权限最小化**：`scripting`、`storage`、`tabs`、`activeTab`、`bookmarks`（书签仅用于怀旧助手随机推荐，本地读取）、`alarms`（仅用于每日归航定时提醒）。今日足迹数据由扩展自己在 background + content 中记录，无需 `history` 权限。
 
 ---
 
 ## 📋 当前功能（基础开发完成）
 
-*   **弹窗**：复古模式 / CRT 扫描线开关；打开主题页（整行按钮 + 快捷键提示）；中/英语言切换。
-*   **主题页（newtab）**：XP 壁纸 + 搜索栏（谷歌/必应/百度）+ 怀旧助手（预设话术 + 随机书签）；与选项页共用，不覆盖浏览器新标签页。
-*   **多语言**：中/英，vue-i18n + `chrome.storage.local.locale`。
+*   **弹窗**：复古模式 / CRT 扫描线开关；打开主题页（整行按钮 + 快捷键提示）；中/英语言切换；**陪伴天数 + 里程碑徽章**（Y2K 风格）；**晨间问候**（每日首次显示，可关闭）；**每日归航时刻**（开关 + 时间选择 + 归航数据：本月次数、连续天数）；**今日足迹**（由 background 记录停留时长 + content 记录点击/滚动/输入，展示今日列表并显示时长与点击，点击打开）。
+*   **主题页（newtab）**：XP 壁纸 + 搜索栏（谷歌/必应/百度）+ 怀旧助手（预设话术 + 随机书签）；与选项页共用，不覆盖浏览器新标签页；打开主题页也会累计当日为活跃日。
+*   **多语言**：中/英，vue-i18n + `chrome.storage.local.locale`；粘性功能文案已加入 `popup.daysLabel`、`popup.milestones`、`popup.greetingMorning`、`popup.greetingClose`。
 *   **快捷键**：Alt+Shift+Y（Mac Option+Shift+Y）打开主题页，可在 `chrome://extensions` → 键盘快捷方式 中修改。
 
 ---
