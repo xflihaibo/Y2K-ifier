@@ -144,6 +144,7 @@ function previewRitual() {
       title: r.title || r.url || '',
       url: r.url,
       domain: getDomain(r.url),
+      activeDuration: r.activeDuration ?? 0,
     }))
     chrome.tabs.sendMessage(tab.id, {
       type: 'Y2K_SHOW_RITUAL',

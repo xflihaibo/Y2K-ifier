@@ -171,7 +171,7 @@ interface Y2kRitualTimelineItem {
   url: string
   domain: string
   /** 该页今日可见停留秒数 */
-  duration: number
+  activeDuration: number
 }
 
 /** 今日数据汇总，用于在当前页展示归航时刻 */
@@ -205,7 +205,7 @@ async function getY2kTodaySummary(): Promise<Y2kTodaySummary> {
       title: r.title || r.url || '',
       url: r.url,
       domain: getDomainFromUrl(r.url),
-      duration: r.activeDuration ?? 0,
+      activeDuration: r.activeDuration ?? 0,
     }))
   return {
     clicks: list.reduce((s, r) => s + (r.clicks ?? 0), 0),

@@ -399,12 +399,118 @@ interface RitualTimelineItem {
   url: string
   domain: string
   /** 该页今日可见停留秒数，用于今日关键词排序 */
+  activeDuration?: number
+  /** @deprecated 兼容旧 payload，优先用 activeDuration */
   duration?: number
 }
 
-// 归航时刻：变色/三闪/收线动画 + 右下角浮层入口
+function getTimelineItemDuration(item: RitualTimelineItem): number {
+  return (item.activeDuration ?? item.duration ?? 0)
+}
+
+// 归航时刻：变色/三闪/收线动画 → 全黑 → 打印机音效 + 热敏纸小票滑出 → 归航浮层
 const Y2K_FLOAT_AVATAR_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48"><rect width="48" height="48" fill="#c0c0c0" stroke="#808080" stroke-width="2"/><circle cx="16" cy="18" r="3" fill="#000"/><circle cx="32" cy="18" r="3" fill="#000"/><path d="M14 30 Q24 38 34 30" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round"/></svg>`
 const RITUAL_DURATION_MS = 4200
+const RITUAL_RECEIPT_DELAY_MS = 600
+const RITUAL_RECEIPT_ANIM_MS = 1800
+const RITUAL_FLOAT_AFTER_RECEIPT_MS = 2400
+/** 小票底部 CTA 跳转：伴影 (Shadow Mate) Chrome 商店页 */
+const RECEIPT_AD_CTA_URL = 'https://chromewebstore.google.com/detail/hlidpdhiafeejnmjbpjkbdpohocfjicf?utm_source=item-share-cb'
+
+/** 热敏纸小票文案：中/英 */
+const RECEIPT_STRINGS: Record<'zh-CN' | 'en', {
+  dateLabel: string
+  timeLabel: string
+  header: string
+  separator: string
+  totalMemory: (min: number) => string
+  signature: string
+  unknown: string
+  ad: string
+  adCta: string
+}> = {
+  'zh-CN': {
+    dateLabel: '日期',
+    timeLabel: '时间',
+    header: '--- 冲浪日志 ---',
+    separator: '--------------------',
+    totalMemory: (min) => `[ 总时长: ${min} 分钟 ]`,
+    signature: '"由 Shadow Mate 存档"',
+    unknown: '未知',
+    ad: '明天想专注一点？试试',
+    adCta: '[ 专注标签 ]',
+  },
+  en: {
+    dateLabel: 'DATE',
+    timeLabel: 'TIME',
+    header: '--- BROWSING LOG ---',
+    separator: '--------------------',
+    totalMemory: (min) => `[ TOTAL MEMORY: ${min}m ]`,
+    signature: '"Saved by Shadow Mate"',
+    unknown: 'unknown',
+    ad: 'Need a clean slate for tomorrow? Try',
+    adCta: '[ Focus Tab ]',
+  },
+}
+
+function buildReceiptLines(data: { duration: number; timeline?: RitualTimelineItem[]; locale?: string }): string[] {
+  const isZh = data.locale === 'zh-CN'
+  const t = RECEIPT_STRINGS[isZh ? 'zh-CN' : 'en']
+  const now = new Date()
+  const dateStr = now.toISOString().slice(0, 10)
+  const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`
+  const totalMin = Math.round(data.duration / 60)
+  const lines: string[] = [
+    `[ ${t.dateLabel}: ${dateStr} ]`,
+    `[ ${t.timeLabel}: ${timeStr} ]`,
+    '',
+    t.header,
+  ]
+  const timeline = (data.timeline ?? []).slice()
+  timeline.sort((a, b) => getTimelineItemDuration(b) - getTimelineItemDuration(a))
+  const top = timeline.slice(0, 10)
+  for (const item of top) {
+    const d = item.domain || t.unknown
+    const m = Math.round(getTimelineItemDuration(item) / 60)
+    const pad = Math.max(0, 24 - d.length)
+    lines.push(`> ${d} ${'.'.repeat(pad)} ${m}m`)
+  }
+  lines.push(t.separator)
+  lines.push(t.totalMemory(totalMin))
+  lines.push('')
+  lines.push(t.signature)
+  return lines
+}
+
+function playPrinterBuzz() {
+  try {
+    const ctx = new (window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext)()
+    const dur = 1.4
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+    const noise = ctx.createBufferSource()
+    const noiseBuf = ctx.createBuffer(1, ctx.sampleRate * dur, ctx.sampleRate)
+    const channel = noiseBuf.getChannelData(0)
+    for (let i = 0; i < channel.length; i++) channel[i] = (Math.random() * 2 - 1) * 0.15
+    noise.buffer = noiseBuf
+    noise.connect(gain)
+    osc.type = 'sawtooth'
+    osc.frequency.setValueAtTime(55, ctx.currentTime)
+    osc.frequency.setValueAtTime(75, ctx.currentTime + dur * 0.5)
+    osc.connect(gain)
+    gain.connect(ctx.destination)
+    gain.gain.setValueAtTime(0, ctx.currentTime)
+    gain.gain.linearRampToValueAtTime(0.06, ctx.currentTime + 0.05)
+    gain.gain.setValueAtTime(0.06, ctx.currentTime + dur - 0.2)
+    gain.gain.linearRampToValueAtTime(0, ctx.currentTime + dur)
+    osc.start(ctx.currentTime)
+    osc.stop(ctx.currentTime + dur)
+    noise.start(ctx.currentTime)
+    noise.stop(ctx.currentTime + dur)
+  } catch {
+    /* no audio */
+  }
+}
 
 function showY2kRitualFloatingAvatar(data: {
   clicks: number
@@ -521,6 +627,65 @@ function showY2kRitualFloatingAvatar(data: {
         50% { opacity: 0.25; }
         100% { opacity: 0.1; }
       }
+      /* 热敏纸小票：全黑后滑出 */
+      #y2k-ritual-receipt-wrap {
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        display: flex; align-items: center; justify-content: center;
+        pointer-events: none; opacity: 0; transition: opacity 0.3s ease;
+      }
+      #y2k-ritual-receipt-wrap.receipt-visible { opacity: 1; }
+      .y2k-ritual-receipt {
+        position: relative;
+        width: 280px; max-width: 90vw;
+        background: linear-gradient(to bottom, #f5f5f0 0%, #e8e8e0 100%),
+                    repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.02) 2px, rgba(0,0,0,0.02) 3px);
+        color: #1a1a1a;
+        font-family: "Courier New", "Consolas", monospace;
+        font-size: 11px;
+        line-height: 1.5;
+        padding: 16px 20px 24px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(0,0,0,0.08);
+        white-space: pre;
+        transform: translateY(100vh);
+        transition: transform 1.8s cubic-bezier(0.22, 1, 0.36, 1);
+        letter-spacing: 0.02em;
+        text-shadow: 0 0 0.5px rgba(0,0,0,0.15);
+        clip-path: polygon(
+          0 8px, 2.08% 0, 4.17% 8px, 6.25% 0, 8.33% 8px, 10.42% 0, 12.5% 8px, 14.58% 0, 16.67% 8px, 18.75% 0, 20.83% 8px, 22.92% 0, 25% 8px, 27.08% 0, 29.17% 8px, 31.25% 0, 33.33% 8px, 35.42% 0, 37.5% 8px, 39.58% 0, 41.67% 8px, 43.75% 0, 45.83% 8px, 47.92% 0, 50% 8px, 52.08% 0, 54.17% 8px, 56.25% 0, 58.33% 8px, 60.42% 0, 62.5% 8px, 64.58% 0, 66.67% 8px, 68.75% 0, 70.83% 8px, 72.92% 0, 75% 8px, 77.08% 0, 79.17% 8px, 81.25% 0, 83.33% 8px, 85.42% 0, 87.5% 8px, 89.58% 0, 91.67% 8px, 93.75% 0, 95.83% 8px, 97.92% 0, 100% 8px,
+          100% calc(100% - 8px), 97.92% 100%, 95.83% calc(100% - 8px), 93.75% 100%, 91.67% calc(100% - 8px), 89.58% 100%, 87.5% calc(100% - 8px), 85.42% 100%, 83.33% calc(100% - 8px), 81.25% 100%, 79.17% calc(100% - 8px), 77.08% 100%, 75% calc(100% - 8px), 72.92% 100%, 70.83% calc(100% - 8px), 68.75% 100%, 66.67% calc(100% - 8px), 64.58% 100%, 62.5% calc(100% - 8px), 60.42% 100%, 58.33% calc(100% - 8px), 56.25% 100%, 54.17% calc(100% - 8px), 52.08% 100%, 50% calc(100% - 8px), 47.92% 100%, 45.83% calc(100% - 8px), 43.75% 100%, 41.67% calc(100% - 8px), 39.58% 100%, 37.5% calc(100% - 8px), 35.42% 100%, 33.33% calc(100% - 8px), 31.25% 100%, 29.17% calc(100% - 8px), 27.08% 100%, 25% calc(100% - 8px), 22.92% 100%, 20.83% calc(100% - 8px), 18.75% 100%, 16.67% calc(100% - 8px), 14.58% 100%, 12.5% calc(100% - 8px), 10.42% 100%, 8.33% calc(100% - 8px), 6.25% 100%, 4.17% calc(100% - 8px), 2.08% 100%, 0 calc(100% - 8px),
+          0 8px
+        );
+      }
+      #y2k-ritual-receipt-wrap.receipt-slide .y2k-ritual-receipt { transform: translateY(0); }
+      .y2k-ritual-receipt .receipt-signature {
+        font-family: "Comic Sans MS", "Bradley Hand", "Segoe Script", cursive;
+        font-style: italic;
+        font-size: 12px;
+        margin-top: 8px;
+        color: #333;
+      }
+      .y2k-ritual-receipt .receipt-tear-line {
+        margin-top: 14px;
+        height: 2px;
+        background: repeating-linear-gradient(90deg, #888 0, #888 3px, transparent 3px, transparent 8px);
+        border: none;
+      }
+      .y2k-ritual-receipt .receipt-ad {
+        margin-top: 10px;
+        font-size: 10px;
+        color: #555;
+        line-height: 1.4;
+        white-space: normal;
+        word-break: break-word;
+      }
+      .y2k-ritual-receipt .receipt-ad-cta {
+        font-weight: bold;
+        color: #000080;
+        text-decoration: underline;
+        cursor: pointer;
+      }
+      .y2k-ritual-receipt .receipt-ad-cta:hover { color: #0000b0; }
+      .y2k-ritual-receipt { pointer-events: auto; }
     `
     document.head.appendChild(ritualStyle)
   }
@@ -562,10 +727,33 @@ function showY2kRitualFloatingAvatar(data: {
     showY2kRitualUI(data)
   })
 
+  // 动画结束后：先短暂全黑，再显示小票 + 打印机音效，最后出归航浮层
   window.setTimeout(() => {
-    if (!document.getElementById('y2k-ritual-container')) return
-    document.body.appendChild(float)
-  }, RITUAL_DURATION_MS)
+    const cont = document.getElementById('y2k-ritual-container')
+    if (!cont) return
+    const wrap = document.createElement('div')
+    wrap.id = 'y2k-ritual-receipt-wrap'
+    const receipt = document.createElement('div')
+    receipt.className = 'y2k-ritual-receipt'
+    const lines = buildReceiptLines(data)
+    const signature = lines.pop() ?? ''
+    const bodyText = lines.join('\n')
+    const receiptT = RECEIPT_STRINGS[data.locale === 'zh-CN' ? 'zh-CN' : 'en']
+    const ctaHref = RECEIPT_AD_CTA_URL
+    const tearAndAd = `<div class="receipt-tear-line"></div><div class="receipt-ad">${escapeHtml(receiptT.ad)} <a href="${escapeHtml(ctaHref)}" target="_blank" rel="noopener noreferrer" class="receipt-ad-cta">${escapeHtml(receiptT.adCta)}</a> &gt;</div>`
+    receipt.innerHTML = escapeHtml(bodyText) + '\n<span class="receipt-signature">' + escapeHtml(signature) + '</span>' + tearAndAd
+    wrap.appendChild(receipt)
+    cont.appendChild(wrap)
+    playPrinterBuzz()
+    wrap.classList.add('receipt-visible')
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => wrap.classList.add('receipt-slide'))
+    })
+    window.setTimeout(() => {
+      if (!document.getElementById('y2k-ritual-container')) return
+      document.body.appendChild(float)
+    }, RITUAL_FLOAT_AFTER_RECEIPT_MS)
+  }, RITUAL_DURATION_MS + RITUAL_RECEIPT_DELAY_MS)
 }
 
 function showY2kRitualUI(data: {
@@ -588,7 +776,7 @@ function showY2kRitualUI(data: {
   const timeline = data.timeline ?? []
   /** 今日关键词：按停留时长最久的前 10 条页面，用 domain 作为关键词（去重保序） */
   const topByDuration = [...timeline]
-    .sort((a, b) => (b.duration ?? 0) - (a.duration ?? 0))
+    .sort((a, b) => getTimelineItemDuration(b) - getTimelineItemDuration(a))
     .slice(0, 10)
   const seenDomain = new Set<string>()
   const todayKeywords = topByDuration
@@ -668,10 +856,19 @@ function showY2kRitualUI(data: {
   card.className = 'y2k-ritual-card'
   const activeVal = `${durationMin}${t.unitMinutes}`
   const clicksVal = `${data.clicks}${t.unitTimes}`
+  const statsHtml = `
+    <div class="y2k-ritual-stats">
+      <div class="y2k-ritual-stat"><span class="y2k-ritual-stat-label">${escapeHtml(t.statClicks)}</span><span class="y2k-ritual-stat-value">${escapeHtml(clicksVal.trim())}</span></div>
+      <div class="y2k-ritual-stat"><span class="y2k-ritual-stat-label">${escapeHtml(t.statScroll)}</span><span class="y2k-ritual-stat-value">${escapeHtml(scrollVal)}</span></div>
+      <div class="y2k-ritual-stat"><span class="y2k-ritual-stat-label">${escapeHtml(t.statActive)}</span><span class="y2k-ritual-stat-value">${escapeHtml(activeVal)}</span></div>
+      <div class="y2k-ritual-stat"><span class="y2k-ritual-stat-label">${escapeHtml(t.statChars)}</span><span class="y2k-ritual-stat-value">${escapeHtml(String(data.chars))}</span></div>
+    </div>
+  `
   card.innerHTML = `
     <button type="button" class="y2k-ritual-close" aria-label="Close">×</button>
     <div class="y2k-ritual-title">${t.title}</div>
     <div class="y2k-ritual-desc">${escapeHtml(y2kDescription)}</div>
+    ${statsHtml}
     <div class="y2k-ritual-narrative"><span class="y2k-ritual-narrative-prefix">${escapeHtml(t.narrativePrefix ?? '>>>')}</span> ${escapeHtml(narrative)} ${escapeHtml(t.narrativeClosings[Math.floor(Math.random() * t.narrativeClosings.length)])}</div>
     ${timelineHtml}
     ${tagsHtml}
