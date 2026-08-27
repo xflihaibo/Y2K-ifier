@@ -122,13 +122,13 @@ const hasBookmark = computed(() => !!randomBookmark.value)
 }
 
 .bubble {
-  background: #fff;
-  border: 2px solid #0054e3;
+  background: var(--y2k-bubble-bg);
+  border: 2px solid var(--y2k-bubble-border);
   padding: 10px 14px;
   box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.15);
   font-family: "MS Sans Serif", "Microsoft Sans Serif", Arial, sans-serif;
   font-size: 14px;
-  color: #000;
+  color: var(--y2k-text);
 }
 
 .bubble-text {
@@ -138,14 +138,14 @@ const hasBookmark = computed(() => !!randomBookmark.value)
 
 .bubble-link {
   display: block;
-  color: #0000ee;
+  color: var(--y2k-link);
   text-decoration: underline;
   font-size: 13px;
   word-break: break-all;
 }
 
 .bubble-link:hover {
-  color: #ff0000;
+  color: var(--y2k-link-hover);
 }
 
 .bubble-tail {
@@ -156,7 +156,7 @@ const hasBookmark = computed(() => !!randomBookmark.value)
   height: 0;
   border-left: 10px solid transparent;
   border-right: 10px solid transparent;
-  border-top: 12px solid #0054e3;
+  border-top: 12px solid var(--y2k-bubble-border);
 }
 
 .bubble-tail::after {
@@ -168,16 +168,16 @@ const hasBookmark = computed(() => !!randomBookmark.value)
   height: 0;
   border-left: 8px solid transparent;
   border-right: 8px solid transparent;
-  border-top: 10px solid #fff;
+  border-top: 10px solid var(--y2k-bubble-bg);
 }
 
 .character {
   width: 64px;
   height: 80px;
-  background: linear-gradient(180deg, #c0c0c0 0%, #a0a0a0 100%);
-  border: 2px solid #808080;
-  border-top: 3px solid #fff;
-  border-left: 3px solid #fff;
+  background: var(--y2k-agent-character-bg);
+  border: 2px solid var(--y2k-border-lo);
+  border-top: 3px solid var(--y2k-border-hi);
+  border-left: 3px solid var(--y2k-border-hi);
   box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.2);
   display: flex;
   align-items: center;
@@ -188,8 +188,8 @@ const hasBookmark = computed(() => !!randomBookmark.value)
   position: relative;
   width: 40px;
   height: 40px;
-  background: #fff;
-  border: 1px solid #333;
+  background: var(--y2k-agent-face-bg);
+  border: 1px solid var(--y2k-text-label);
 }
 
 .eye {
@@ -197,7 +197,7 @@ const hasBookmark = computed(() => !!randomBookmark.value)
   top: 10px;
   width: 6px;
   height: 6px;
-  background: #000;
+  background: var(--y2k-agent-eye);
 }
 
 .eye.left {
@@ -215,7 +215,7 @@ const hasBookmark = computed(() => !!randomBookmark.value)
   transform: translateX(-50%);
   width: 16px;
   height: 4px;
-  border-bottom: 2px solid #000;
+  border-bottom: 2px solid var(--y2k-agent-eye);
   border-radius: 0 0 8px 8px;
 }
 
@@ -227,25 +227,25 @@ const hasBookmark = computed(() => !!randomBookmark.value)
 }
 
 .btn-retro {
-  background: #c0c0c0;
-  border: 2px solid #fff;
-  border-right-color: #808080;
-  border-bottom-color: #808080;
+  background: var(--y2k-btn-face);
+  border: 2px solid var(--y2k-border-hi);
+  border-right-color: var(--y2k-border-lo);
+  border-bottom-color: var(--y2k-border-lo);
   padding: 6px 12px;
   font-family: "MS Sans Serif", Arial, sans-serif;
   font-size: 12px;
-  color: #000;
+  color: var(--y2k-text);
   cursor: pointer;
 }
 
 .btn-retro:hover {
-  background: #d0d0d0;
+  background: var(--y2k-btn-face-hover);
 }
 
 .btn-retro:active {
-  border-top-color: #808080;
-  border-left-color: #808080;
-  border-right-color: #fff;
-  border-bottom-color: #fff;
+  border-top-color: var(--y2k-border-lo);
+  border-left-color: var(--y2k-border-lo);
+  border-right-color: var(--y2k-border-hi);
+  border-bottom-color: var(--y2k-border-hi);
 }
 </style>

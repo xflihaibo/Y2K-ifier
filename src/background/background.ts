@@ -262,8 +262,9 @@ async function injectRetro(tabId: number, url: string): Promise<void> {
   if (!tabId || isRestrictedURL(url)) return
 
   try {
-    const data = await chrome.storage.local.get('crtEnabled')
+    const data = await chrome.storage.local.get(['crtEnabled', 'underConstructionEnabled'])
     const crtEnabled = data.crtEnabled !== false
+    const underConstructionEnabled = data.underConstructionEnabled === true
 
     await chrome.scripting.insertCSS({
       target: { tabId, allFrames: false },
@@ -272,7 +273,7 @@ async function injectRetro(tabId: number, url: string): Promise<void> {
 
     await chrome.scripting.executeScript({
       target: { tabId },
-      func: (crtEnabled: boolean) => {
+      func: (crtEnabled: boolean, underConstructionEnabled: boolean) => {
         const elementsToRemove = ['y2k-under-construction', 'y2k-marquee-bar']
         elementsToRemove.forEach((id) => {
           const el = document.getElementById(id)
@@ -287,9 +288,47 @@ async function injectRetro(tabId: number, url: string): Promise<void> {
           document.documentElement.classList.remove('y2k-crt-active')
         }
 
-        const widget = document.createElement('div')
-        widget.id = 'y2k-under-construction'
-        document.documentElement.appendChild(widget)
+        if (underConstructionEnabled) {
+          const host = document.createElement('div')
+          host.id = 'y2k-under-construction'
+          host.setAttribute('aria-hidden', 'true')
+          const s = host.style
+          s.setProperty('all', 'initial', 'important')
+          s.setProperty('display', 'block', 'important')
+          s.setProperty('position', 'fixed', 'important')
+          s.setProperty('right', '20px', 'important')
+          s.setProperty('bottom', '20px', 'important')
+          s.setProperty('width', '120px', 'important')
+          s.setProperty('height', '40px', 'important')
+          s.setProperty('z-index', '2147483647', 'important')
+          s.setProperty('pointer-events', 'none', 'important')
+          s.setProperty('margin', '0', 'important')
+          s.setProperty('padding', '0', 'important')
+          s.setProperty('border', 'none', 'important')
+          s.setProperty('overflow', 'visible', 'important')
+          s.setProperty('opacity', '1', 'important')
+          s.setProperty('visibility', 'visible', 'important')
+          s.setProperty('box-sizing', 'border-box', 'important')
+          const shadow = host.attachShadow({ mode: 'open' })
+          shadow.innerHTML = `
+            <style>
+              :host { display: block !important; width: 120px !important; height: 40px !important; }
+              .box { width: 120px; height: 40px; box-shadow: 4px 4px 0 #000; image-rendering: pixelated; }
+              svg { display: block; width: 120px; height: 40px; }
+            </style>
+            <div class="box">
+              <svg xmlns="http://www.w3.org/2000/svg" width="120" height="40" viewBox="0 0 120 40">
+                <rect width="120" height="40" fill="#FFD700"/>
+                <path d="M-20 0L-10 0L-40 30L-50 30ZM0 0L10 0L-20 30L-30 30ZM20 0L30 0L0 30L-10 30ZM40 0L50 0L20 30L10 30ZM60 0L70 0L40 30L30 30ZM80 0L90 0L60 30L50 30ZM100 0L110 0L80 30L70 30ZM120 0L130 0L100 30L90 30ZM140 0L150 0L120 30L110 30Z" fill="#000">
+                  <animateTransform attributeName="transform" type="translate" from="0 0" to="20 0" dur="0.5s" repeatCount="indefinite"/>
+                </path>
+                <rect x="5" y="5" width="110" height="30" fill="#FFD700" stroke="#000" stroke-width="2"/>
+                <text x="60" y="24" font-family="Courier New, monospace" font-size="10" font-weight="bold" fill="#000" text-anchor="middle">UNDER CONSTRUCTION</text>
+              </svg>
+            </div>
+          `
+          ;(document.body || document.documentElement).appendChild(host)
+        }
 
         if (crtEnabled) {
           const marquee = document.createElement('div')
@@ -305,7 +344,7 @@ async function injectRetro(tabId: number, url: string): Promise<void> {
           document.documentElement.appendChild(marquee)
         }
       },
-      args: [crtEnabled],
+      args: [crtEnabled, underConstructionEnabled],
     })
     console.log(`Y2K effects injected into: ${tabId}`)
   } catch (err) {
@@ -380,6 +419,87 @@ async function updateCRT(tabId: number, url: string, crtEnabled: boolean): Promi
   }
 }
 
+async function updateUnderConstruction(tabId: number, url: string, enabled: boolean): Promise<void> {
+  if (!tabId || isRestrictedURL(url)) return
+  try {
+    await chrome.scripting.executeScript({
+      target: { tabId },
+      func: (show: boolean) => {
+        const existing = document.getElementById('y2k-under-construction')
+        if (!show) {
+          if (existing) existing.remove()
+          return
+        }
+        if (existing) return
+
+        const host = document.createElement('div')
+        host.id = 'y2k-under-construction'
+        host.setAttribute('aria-hidden', 'true')
+        // 用 setProperty(..., 'important')，避免页面 CSS 盖掉；cssText 里的 !important 不可靠
+        const s = host.style
+        s.setProperty('all', 'initial', 'important')
+        s.setProperty('display', 'block', 'important')
+        s.setProperty('position', 'fixed', 'important')
+        s.setProperty('right', '20px', 'important')
+        s.setProperty('bottom', '20px', 'important')
+        s.setProperty('width', '120px', 'important')
+        s.setProperty('height', '40px', 'important')
+        s.setProperty('z-index', '2147483647', 'important')
+        s.setProperty('pointer-events', 'none', 'important')
+        s.setProperty('margin', '0', 'important')
+        s.setProperty('padding', '0', 'important')
+        s.setProperty('border', 'none', 'important')
+        s.setProperty('overflow', 'visible', 'important')
+        s.setProperty('opacity', '1', 'important')
+        s.setProperty('visibility', 'visible', 'important')
+        s.setProperty('box-sizing', 'border-box', 'important')
+
+        const shadow = host.attachShadow({ mode: 'open' })
+        shadow.innerHTML = `
+          <style>
+            :host { display: block !important; width: 120px !important; height: 40px !important; }
+            .box {
+              width: 120px; height: 40px;
+              box-shadow: 4px 4px 0 #000;
+              image-rendering: pixelated;
+            }
+            svg { display: block; width: 120px; height: 40px; }
+          </style>
+          <div class="box">
+            <svg xmlns="http://www.w3.org/2000/svg" width="120" height="40" viewBox="0 0 120 40">
+              <rect width="120" height="40" fill="#FFD700"/>
+              <path d="M-20 0L-10 0L-40 30L-50 30ZM0 0L10 0L-20 30L-30 30ZM20 0L30 0L0 30L-10 30ZM40 0L50 0L20 30L10 30ZM60 0L70 0L40 30L30 30ZM80 0L90 0L60 30L50 30ZM100 0L110 0L80 30L70 30ZM120 0L130 0L100 30L90 30ZM140 0L150 0L120 30L110 30Z" fill="#000">
+                <animateTransform attributeName="transform" type="translate" from="0 0" to="20 0" dur="0.5s" repeatCount="indefinite"/>
+              </path>
+              <rect x="5" y="5" width="110" height="30" fill="#FFD700" stroke="#000" stroke-width="2"/>
+              <text x="60" y="24" font-family="Courier New, monospace" font-size="10" font-weight="bold" fill="#000" text-anchor="middle">UNDER CONSTRUCTION</text>
+            </svg>
+          </div>
+        `
+        const root = document.documentElement
+        const body = document.body
+        ;(body || root).appendChild(host)
+      },
+      args: [enabled],
+    })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    if (!message.includes('No tab with id')) {
+      console.warn(`Under-construction update failed: ${message}`)
+    }
+  }
+}
+
+async function applyUnderConstructionToAllTabs(enabled: boolean): Promise<void> {
+  const tabs = await chrome.tabs.query({})
+  await Promise.all(
+    tabs.map(async (tab) => {
+      if (!tab.id || !tab.url || isRestrictedURL(tab.url)) return
+      await updateUnderConstruction(tab.id, tab.url, enabled)
+    })
+  )
+}
+
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area === 'local') {
     if (changes.y2kRitualEnabled || changes.y2kRitualTime) {
@@ -408,6 +528,10 @@ chrome.storage.onChanged.addListener((changes, area) => {
         })
       })
     }
+    if (changes.underConstructionEnabled) {
+      const show = changes.underConstructionEnabled.newValue === true
+      applyUnderConstructionToAllTabs(show)
+    }
   }
 })
 
@@ -431,9 +555,12 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   }
   // 仅在页面加载完成时注入复古样式，避免重复注入或 DOM 未就绪
   if (changeInfo.status !== 'complete' || !tab.url || isRestrictedURL(tab.url)) return
-  chrome.storage.local.get(['isEnabled', 'crtEnabled'], (data) => {
+  chrome.storage.local.get(['isEnabled', 'underConstructionEnabled'], (data) => {
     if (data.isEnabled !== false) {
       injectRetro(tabId, tab.url!)
+    } else if (data.underConstructionEnabled === true) {
+      // 复古关闭时仍可单独显示建设中挂件
+      updateUnderConstruction(tabId, tab.url!, true)
     }
   })
 })
@@ -454,13 +581,17 @@ chrome.runtime.onMessage.addListener((message: { action?: string; type?: string;
       }
     })
   }
+  if (message.action === 'toggleUnderConstruction') {
+    applyUnderConstructionToAllTabs(message.state === true)
+  }
 })
 
 chrome.runtime.onInstalled.addListener(() => {
-  chrome.storage.local.get(['isEnabled', 'crtEnabled'], (res) => {
+  chrome.storage.local.get(['isEnabled', 'crtEnabled', 'underConstructionEnabled'], (res) => {
     const defaults: Record<string, unknown> = {}
     if (res.isEnabled === undefined) defaults.isEnabled = true
     if (res.crtEnabled === undefined) defaults.crtEnabled = true
+    if (res.underConstructionEnabled === undefined) defaults.underConstructionEnabled = false
     if (Object.keys(defaults).length > 0) {
       chrome.storage.local.set(defaults)
     }

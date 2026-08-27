@@ -410,12 +410,27 @@ function getTimelineItemDuration(item: RitualTimelineItem): number {
 
 // 归航时刻：变色/三闪/收线动画 → 全黑 → 打印机音效 + 热敏纸小票滑出 → 归航浮层
 const Y2K_FLOAT_AVATAR_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48"><rect width="48" height="48" fill="#c0c0c0" stroke="#808080" stroke-width="2"/><circle cx="16" cy="18" r="3" fill="#000"/><circle cx="32" cy="18" r="3" fill="#000"/><path d="M14 30 Q24 38 34 30" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round"/></svg>`
+const Y2K_FLOAT_AVATAR_SVG_DARK = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48"><rect width="48" height="48" fill="#3a3a3a" stroke="#1a1a1a" stroke-width="2"/><circle cx="16" cy="18" r="3" fill="#e8e8e8"/><circle cx="32" cy="18" r="3" fill="#e8e8e8"/><path d="M14 30 Q24 38 34 30" fill="none" stroke="#e8e8e8" stroke-width="2" stroke-linecap="round"/></svg>`
 const RITUAL_DURATION_MS = 4200
 const RITUAL_RECEIPT_DELAY_MS = 600
 const RITUAL_RECEIPT_ANIM_MS = 1800
 const RITUAL_FLOAT_AFTER_RECEIPT_MS = 2400
 /** 小票底部 CTA 跳转：伴影 (Shadow Mate) Chrome 商店页 */
 const RECEIPT_AD_CTA_URL = 'https://chromewebstore.google.com/detail/hlidpdhiafeejnmjbpjkbdpohocfjicf?utm_source=item-share-cb'
+
+type RitualUiTheme = 'light' | 'dark'
+
+function getRitualUiTheme(): Promise<RitualUiTheme> {
+  return new Promise((resolve) => {
+    if (typeof chrome === 'undefined' || !chrome.storage?.local) {
+      resolve('light')
+      return
+    }
+    chrome.storage.local.get('uiTheme', (data) => {
+      resolve(data.uiTheme === 'dark' ? 'dark' : 'light')
+    })
+  })
+}
 
 /** 热敏纸小票文案：中/英 */
 const RECEIPT_STRINGS: Record<'zh-CN' | 'en', {
@@ -525,12 +540,19 @@ function showY2kRitualFloatingAvatar(data: {
   const isZh = data.locale === 'zh-CN'
   const label = isZh ? '归航' : 'Ritual'
 
-  // 归航动画样式（overlay 变色/三闪/收线 + 扫描线呼吸）
+  void getRitualUiTheme().then((theme) => {
+    runY2kRitualSequence(data, isZh, label, theme)
+  })
+}
+
+function ensureRitualAnimationStyles() {
   let ritualStyle = document.getElementById('y2k-ritual-animation-styles')
   if (!ritualStyle) {
     ritualStyle = document.createElement('style')
     ritualStyle.id = 'y2k-ritual-animation-styles'
-    ritualStyle.textContent = `
+    document.head.appendChild(ritualStyle)
+  }
+  ritualStyle.textContent = `
       #y2k-ritual-container {
         --ritual-duration: 4.2s;
         position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
@@ -655,6 +677,7 @@ function showY2kRitualFloatingAvatar(data: {
           100% calc(100% - 8px), 97.92% 100%, 95.83% calc(100% - 8px), 93.75% 100%, 91.67% calc(100% - 8px), 89.58% 100%, 87.5% calc(100% - 8px), 85.42% 100%, 83.33% calc(100% - 8px), 81.25% 100%, 79.17% calc(100% - 8px), 77.08% 100%, 75% calc(100% - 8px), 72.92% 100%, 70.83% calc(100% - 8px), 68.75% 100%, 66.67% calc(100% - 8px), 64.58% 100%, 62.5% calc(100% - 8px), 60.42% 100%, 58.33% calc(100% - 8px), 56.25% 100%, 54.17% calc(100% - 8px), 52.08% 100%, 50% calc(100% - 8px), 47.92% 100%, 45.83% calc(100% - 8px), 43.75% 100%, 41.67% calc(100% - 8px), 39.58% 100%, 37.5% calc(100% - 8px), 35.42% 100%, 33.33% calc(100% - 8px), 31.25% 100%, 29.17% calc(100% - 8px), 27.08% 100%, 25% calc(100% - 8px), 22.92% 100%, 20.83% calc(100% - 8px), 18.75% 100%, 16.67% calc(100% - 8px), 14.58% 100%, 12.5% calc(100% - 8px), 10.42% 100%, 8.33% calc(100% - 8px), 6.25% 100%, 4.17% calc(100% - 8px), 2.08% 100%, 0 calc(100% - 8px),
           0 8px
         );
+        pointer-events: auto;
       }
       #y2k-ritual-receipt-wrap.receipt-slide .y2k-ritual-receipt { transform: translateY(0); }
       .y2k-ritual-receipt .receipt-signature {
@@ -685,26 +708,68 @@ function showY2kRitualFloatingAvatar(data: {
         cursor: pointer;
       }
       .y2k-ritual-receipt .receipt-ad-cta:hover { color: #0000b0; }
-      .y2k-ritual-receipt { pointer-events: auto; }
-    `
-    document.head.appendChild(ritualStyle)
-  }
 
-  // 浮层按钮样式
+      /* 暗黑模式：热敏纸小票 */
+      #y2k-ritual-receipt-wrap.theme-dark .y2k-ritual-receipt {
+        background: linear-gradient(to bottom, #2a2a2e 0%, #1e1e22 100%),
+                    repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.03) 2px, rgba(255,255,255,0.03) 3px);
+        color: #e8e8e8;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.75), inset 0 0 0 1px rgba(255,255,255,0.08);
+        text-shadow: none;
+      }
+      #y2k-ritual-receipt-wrap.theme-dark .y2k-ritual-receipt .receipt-signature {
+        color: #c8c8c8;
+      }
+      #y2k-ritual-receipt-wrap.theme-dark .y2k-ritual-receipt .receipt-tear-line {
+        background: repeating-linear-gradient(90deg, #888 0, #888 3px, transparent 3px, transparent 8px);
+      }
+      #y2k-ritual-receipt-wrap.theme-dark .y2k-ritual-receipt .receipt-ad {
+        color: #a8a8a8;
+      }
+      #y2k-ritual-receipt-wrap.theme-dark .y2k-ritual-receipt .receipt-ad-cta {
+        color: #7eb6ff;
+      }
+      #y2k-ritual-receipt-wrap.theme-dark .y2k-ritual-receipt .receipt-ad-cta:hover {
+        color: #a8d0ff;
+      }
+  `
+}
+
+function ensureRitualFloatStyles() {
   let floatStyle = document.getElementById('y2k-ritual-float-styles')
   if (!floatStyle) {
     floatStyle = document.createElement('style')
     floatStyle.id = 'y2k-ritual-float-styles'
-    floatStyle.textContent = `
+    document.head.appendChild(floatStyle)
+  }
+  floatStyle.textContent = `
       #y2k-ritual-float { position: fixed; right: 24px; bottom: 24px; z-index: 2147483645; cursor: pointer; pointer-events: auto; }
       #y2k-ritual-float .y2k-ritual-float-box { background: #c0c0c0; border-top: 2px solid #fff; border-left: 2px solid #fff; border-bottom: 2px solid #808080; border-right: 2px solid #808080; padding: 12px 14px; box-shadow: 2px 2px 8px rgba(0,0,0,0.35); display: flex; align-items: center; gap: 12px; }
       #y2k-ritual-float .y2k-ritual-float-box:hover { background: #d0d0d0; }
       #y2k-ritual-float .y2k-ritual-float-avatar { width: 48px; height: 48px; flex-shrink: 0; line-height: 0; }
       #y2k-ritual-float .y2k-ritual-float-avatar svg { width: 48px; height: 48px; display: block; }
       #y2k-ritual-float .y2k-ritual-float-label { font-family: "MS Sans Serif", Arial, sans-serif; font-size: 12px; font-weight: bold; color: #000080; }
-    `
-    document.head.appendChild(floatStyle)
-  }
+      #y2k-ritual-float.theme-dark .y2k-ritual-float-box { background: #2d2d2d; border-top: 2px solid #5c5c5c; border-left: 2px solid #5c5c5c; border-bottom: 2px solid #1a1a1a; border-right: 2px solid #1a1a1a; }
+      #y2k-ritual-float.theme-dark .y2k-ritual-float-box:hover { background: #3d3d3d; }
+      #y2k-ritual-float.theme-dark .y2k-ritual-float-label { color: #7eb6ff; }
+  `
+}
+
+function runY2kRitualSequence(
+  data: {
+    clicks: number
+    scroll: number
+    duration: number
+    chars: number
+    locale: string
+    timeline?: RitualTimelineItem[]
+  },
+  isZh: boolean,
+  label: string,
+  theme: RitualUiTheme
+) {
+  ensureRitualAnimationStyles()
+  ensureRitualFloatStyles()
 
   const container = document.createElement('div')
   container.id = 'y2k-ritual-container'
@@ -714,17 +779,19 @@ function showY2kRitualFloatingAvatar(data: {
 
   const float = document.createElement('div')
   float.id = 'y2k-ritual-float'
+  if (theme === 'dark') float.classList.add('theme-dark')
   float.setAttribute('aria-label', isZh ? '点击查看今日归航信息' : 'Click to see today\'s ritual')
+  const avatarSvg = theme === 'dark' ? Y2K_FLOAT_AVATAR_SVG_DARK : Y2K_FLOAT_AVATAR_SVG
   float.innerHTML = `
     <div class="y2k-ritual-float-box">
-      <div class="y2k-ritual-float-avatar">${Y2K_FLOAT_AVATAR_SVG}</div>
+      <div class="y2k-ritual-float-avatar">${avatarSvg}</div>
       <span class="y2k-ritual-float-label">${escapeHtml(label)}</span>
     </div>
   `
   float.addEventListener('click', () => {
     document.getElementById('y2k-ritual-container')?.remove()
     float.remove()
-    showY2kRitualUI(data)
+    showY2kRitualUI(data, theme)
   })
 
   // 动画结束后：先短暂全黑，再显示小票 + 打印机音效，最后出归航浮层
@@ -733,6 +800,7 @@ function showY2kRitualFloatingAvatar(data: {
     if (!cont) return
     const wrap = document.createElement('div')
     wrap.id = 'y2k-ritual-receipt-wrap'
+    if (theme === 'dark') wrap.classList.add('theme-dark')
     const receipt = document.createElement('div')
     receipt.className = 'y2k-ritual-receipt'
     const lines = buildReceiptLines(data)
@@ -756,14 +824,17 @@ function showY2kRitualFloatingAvatar(data: {
   }, RITUAL_DURATION_MS + RITUAL_RECEIPT_DELAY_MS)
 }
 
-function showY2kRitualUI(data: {
-  clicks: number
-  scroll: number
-  duration: number
-  chars: number
-  locale: string
-  timeline?: RitualTimelineItem[]
-}) {
+function showY2kRitualUI(
+  data: {
+    clicks: number
+    scroll: number
+    duration: number
+    chars: number
+    locale: string
+    timeline?: RitualTimelineItem[]
+  },
+  theme: RitualUiTheme = 'light'
+) {
   if (document.getElementById('y2k-ritual-overlay')) return
   document.getElementById('y2k-ritual-float')?.remove()
   const isZh = data.locale === 'zh-CN'
@@ -806,30 +877,49 @@ function showY2kRitualUI(data: {
   style.id = 'y2k-ritual-styles'
   style.textContent = `
     .y2k-ritual-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.2); z-index: 2147483646; }
+    .y2k-ritual-overlay.theme-dark { background: rgba(0,0,0,0.55); }
     .y2k-ritual-overlay .y2k-ritual-card-wrap { position: absolute; right: 24px; bottom: 24px; max-height: 85vh; overflow: hidden; display: flex; flex-direction: column; }
     .y2k-ritual-card { width: 340px; max-width: calc(100vw - 48px); max-height: 80vh; overflow-y: auto; background: #c0c0c0; font-family: "MS Sans Serif", Arial, sans-serif; font-size: 11px; color: #000; z-index: 2147483647;
       border-top: 2px solid #fff; border-left: 2px solid #fff; border-bottom: 2px solid #808080; border-right: 2px solid #808080; padding: 12px; box-shadow: 2px 2px 8px rgba(0,0,0,0.3); }
+    .y2k-ritual-overlay.theme-dark .y2k-ritual-card { background: #2d2d2d; color: #e8e8e8; border-top: 2px solid #5c5c5c; border-left: 2px solid #5c5c5c; border-bottom: 2px solid #1a1a1a; border-right: 2px solid #1a1a1a; box-shadow: 2px 2px 12px rgba(0,0,0,0.55); }
     .y2k-ritual-card .y2k-ritual-title { font-weight: bold; font-size: 12px; margin-bottom: 6px; color: #000080; }
+    .y2k-ritual-overlay.theme-dark .y2k-ritual-title { color: #7eb6ff; }
     .y2k-ritual-card .y2k-ritual-close { position: absolute; top: 8px; right: 8px; width: 20px; height: 20px; padding: 0; font-size: 14px; line-height: 1; background: #c0c0c0; border: 2px solid #808080; cursor: pointer; color: #000; display: flex; align-items: center; justify-content: center; }
     .y2k-ritual-card .y2k-ritual-close:hover { background: #e0e0e0; }
     .y2k-ritual-card .y2k-ritual-close:active { border-color: #fff; }
+    .y2k-ritual-overlay.theme-dark .y2k-ritual-close { background: #3a3a3a; border-color: #1a1a1a; color: #e8e8e8; }
+    .y2k-ritual-overlay.theme-dark .y2k-ritual-close:hover { background: #4a4a4a; }
     .y2k-ritual-desc { margin-bottom: 6px; line-height: 1.3; color: #000080; font-size: 10px; padding: 5px 8px; background: #d8d8d8; border-top: 2px solid #808080; border-left: 2px solid #808080; border-bottom: 2px solid #fff; border-right: 2px solid #fff; }
+    .y2k-ritual-overlay.theme-dark .y2k-ritual-desc { color: #a8d0ff; background: #3d3d3d; border-top-color: #1a1a1a; border-left-color: #1a1a1a; border-bottom-color: #5c5c5c; border-right-color: #5c5c5c; }
     .y2k-ritual-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 10px; }
     .y2k-ritual-stat { background: #e0e0e0; padding: 6px 8px; border-top: 1px solid #fff; border-left: 1px solid #fff; border-bottom: 1px solid #808080; border-right: 1px solid #808080; display: flex; justify-content: space-between; align-items: center; }
+    .y2k-ritual-overlay.theme-dark .y2k-ritual-stat { background: #3d3d3d; border-top-color: #5c5c5c; border-left-color: #5c5c5c; border-bottom-color: #1a1a1a; border-right-color: #1a1a1a; }
     .y2k-ritual-stat-label { color: #333; }
     .y2k-ritual-stat-value { font-weight: bold; color: #000; }
+    .y2k-ritual-overlay.theme-dark .y2k-ritual-stat-label { color: #c8c8c8; }
+    .y2k-ritual-overlay.theme-dark .y2k-ritual-stat-value { color: #e8e8e8; }
     .y2k-ritual-narrative { margin-top: 6px; margin-bottom: 4px; line-height: 1.4; color: #000; font-size: 11px; padding: 8px 10px; background: #e0e0e0; border-top: 2px solid #fff; border-left: 2px solid #fff; border-bottom: 2px solid #808080; border-right: 2px solid #808080; font-family: "MS Sans Serif", Arial, sans-serif; }
+    .y2k-ritual-overlay.theme-dark .y2k-ritual-narrative { color: #e8e8e8; background: #3d3d3d; border-top-color: #5c5c5c; border-left-color: #5c5c5c; border-bottom-color: #1a1a1a; border-right-color: #1a1a1a; }
     .y2k-ritual-narrative-prefix { color: #000080; font-weight: bold; margin-right: 4px; }
+    .y2k-ritual-overlay.theme-dark .y2k-ritual-narrative-prefix { color: #7eb6ff; }
     .y2k-ritual-narrative-closing { margin-bottom: 10px; font-size: 10px; color: #555; line-height: 1.4; padding-left: 10px; font-style: italic; }
+    .y2k-ritual-overlay.theme-dark .y2k-ritual-narrative-closing { color: #a8a8a8; }
     .y2k-ritual-timeline-title { font-weight: bold; font-size: 11px; margin-top: 14px; margin-bottom: 10px; color: #000; }
+    .y2k-ritual-overlay.theme-dark .y2k-ritual-timeline-title { color: #e8e8e8; }
     .y2k-ritual-timeline-item { display: flex; align-items: flex-start; margin-bottom: 10px; }
     .y2k-ritual-timeline-time { font-size: 10px; color: #333; width: 48px; flex-shrink: 0; }
     .y2k-ritual-timeline-content { flex: 1; padding-left: 8px; border-left: 2px solid #a0a0a0; font-size: 10px; color: #444; }
     .y2k-ritual-timeline-item.active .y2k-ritual-timeline-content { border-left-color: #000080; }
+    .y2k-ritual-overlay.theme-dark .y2k-ritual-timeline-time { color: #c8c8c8; }
+    .y2k-ritual-overlay.theme-dark .y2k-ritual-timeline-content { color: #b0b0b0; border-left-color: #5c5c5c; }
+    .y2k-ritual-overlay.theme-dark .y2k-ritual-timeline-item.active .y2k-ritual-timeline-content { border-left-color: #7eb6ff; }
     .y2k-ritual-footer { margin-top: 12px; font-size: 10px; color: #666; text-align: center; border-top: 1px solid #808080; padding-top: 8px; }
+    .y2k-ritual-overlay.theme-dark .y2k-ritual-footer { color: #9a9a9a; border-top-color: #5c5c5c; }
     .y2k-ritual-tags-title { font-weight: bold; font-size: 10px; margin-bottom: 4px; color: #000; }
+    .y2k-ritual-overlay.theme-dark .y2k-ritual-tags-title { color: #e8e8e8; }
     .y2k-ritual-tags { display: flex; flex-wrap: wrap; gap: 4px; }
     .y2k-ritual-tag { padding: 2px 6px; font-size: 9px; background: #e0e0e0; border: 1px solid #808080; color: #000; }
+    .y2k-ritual-overlay.theme-dark .y2k-ritual-tag { background: #3d3d3d; border-color: #5c5c5c; color: #e8e8e8; }
   `
   document.head.appendChild(style)
 
@@ -849,7 +939,7 @@ function showY2kRitualUI(data: {
 
   const overlay = document.createElement('div')
   overlay.id = 'y2k-ritual-overlay'
-  overlay.className = 'y2k-ritual-overlay'
+  overlay.className = theme === 'dark' ? 'y2k-ritual-overlay theme-dark' : 'y2k-ritual-overlay'
   const wrap = document.createElement('div')
   wrap.className = 'y2k-ritual-card-wrap'
   const card = document.createElement('div')

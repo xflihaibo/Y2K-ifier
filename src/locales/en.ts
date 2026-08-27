@@ -3,11 +3,13 @@ export default {
     title: 'Y2K-ifier',
     retroMode: 'Retro mode',
     crtScanlines: 'CRT scanlines',
+    underConstruction: 'Under construction',
     openThemePage: 'Open theme page (XP wallpaper + search)',
     openThemeShortcut: 'Shortcut: Alt+Shift+Y / Mac Option+Shift+Y (set in chrome://extensions)',
     footer: 'Version 1.0 (C) 2026 RetroSoft',
     ariaRetroToggle: 'Toggle retro mode',
     ariaCrtToggle: 'Toggle CRT effect',
+    ariaUnderConstructionToggle: 'Toggle under construction widget',
     daysLabel: ' days',
     companionSummaryBefore: 'Y2K has been with you for ',
     companionSummaryAfter: ' days',
@@ -117,5 +119,8 @@ export default {
   },
   settings: {
     language: 'Language',
+    theme: 'Theme',
+    themeLight: 'Light',
+    themeDark: 'Dark',
   },
 } as const

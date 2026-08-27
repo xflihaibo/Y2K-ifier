@@ -56,16 +56,24 @@
 
 ## 📦 安装与开发
 
+> 完整开发指南见 **[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)**（架构、模块、数据流、测试与常见任务）。
+
 ### 环境要求
 *   Node.js 18+
 *   npm / pnpm
 
+### 一键启动开发
+
+```bash
+npm install   # 首次需要
+npm start     # 安装依赖 + 启动 watch 构建，并提示 Chrome 加载路径
+```
+
 ### 构建与加载扩展
-1.  安装依赖：`npm install`
-2.  构建扩展：`npm run build`（产物在 `dist/` 目录）
-3.  开发监听：`npm run dev`（监听源码变化并持续构建）
-4.  打开 Chrome，访问 `chrome://extensions/`，开启 **“开发者模式”**。
-5.  点击 **“加载已解压的扩展程序”**，选择本项目下的 **`dist`** 文件夹。
+1.  开发监听：`npm run dev` 或 `npm start`（监听源码变化并持续构建到 `dist/`）
+2.  生产构建：`npm run build`
+3.  打开 Chrome，访问 `chrome://extensions/`，开启 **“开发者模式”**。
+4.  点击 **“加载已解压的扩展程序”**，选择本项目下的 **`dist`** 文件夹。
 
 ### 项目结构（Vite + Vue + TS）
 ```

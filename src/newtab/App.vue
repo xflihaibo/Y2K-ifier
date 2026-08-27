@@ -101,7 +101,7 @@ function onKeydown(e: KeyboardEvent) {
 .xp-theme {
   position: fixed;
   inset: 0;
-  background-color: #7cb3e9;
+  background-color: var(--y2k-newtab-fallback);
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -111,7 +111,17 @@ function onKeydown(e: KeyboardEvent) {
   padding-top: 18vh;
 }
 
+.xp-theme::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--y2k-newtab-overlay);
+  pointer-events: none;
+}
+
 .search-wrap {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -122,8 +132,8 @@ function onKeydown(e: KeyboardEvent) {
   align-items: stretch;
   width: 640px;
   max-width: 92vw;
-  background: rgba(255, 255, 255, 0.96);
-  border: 2px solid #0054e3;
+  background: var(--y2k-newtab-search-bg);
+  border: 2px solid var(--y2k-newtab-search-border);
   border-radius: 0;
   box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.15);
   font-family: "Segoe UI", Tahoma, "Microsoft Sans Serif", sans-serif;
@@ -137,9 +147,9 @@ function onKeydown(e: KeyboardEvent) {
   font-size: 14px;
   font-weight: 500;
   border: none;
-  border-right: 1px solid #c0c0c0;
-  background: #f5f5f5;
-  color: #333;
+  border-right: 1px solid var(--y2k-border-lo);
+  background: var(--y2k-newtab-select-bg);
+  color: var(--y2k-newtab-search-text);
   cursor: pointer;
   outline: none;
   appearance: none;
@@ -150,11 +160,11 @@ function onKeydown(e: KeyboardEvent) {
 }
 
 .engine-select:hover {
-  background-color: #eee;
+  background-color: var(--y2k-surface-elevated);
 }
 
 .engine-select:focus {
-  background-color: #f9f9f9;
+  background-color: var(--y2k-surface-elevated);
 }
 
 .search-input {
@@ -165,10 +175,11 @@ function onKeydown(e: KeyboardEvent) {
   border: none;
   outline: none;
   background: transparent;
+  color: var(--y2k-newtab-search-text);
 }
 
 .search-input::placeholder {
-  color: #888;
+  color: var(--y2k-text-muted);
 }
 
 .search-btn {
@@ -176,18 +187,18 @@ function onKeydown(e: KeyboardEvent) {
   font-size: 14px;
   font-weight: bold;
   color: #fff;
-  background: linear-gradient(180deg, #3a7bd5 0%, #0054e3 100%);
-  border: 1px solid #0047c4;
-  border-left: 1px solid #0054e3;
+  background: var(--y2k-newtab-btn-gradient);
+  border: 1px solid var(--y2k-newtab-search-border);
+  border-left: 1px solid var(--y2k-newtab-search-border);
   cursor: pointer;
 }
 
 .search-btn:hover {
-  background: linear-gradient(180deg, #4a8be5 0%, #1064f3 100%);
+  background: var(--y2k-newtab-btn-gradient-hover);
 }
 
 .search-btn:active {
-  background: #0047c4;
+  background: var(--y2k-newtab-btn-active);
 }
 
 .ritual-banner {
@@ -197,14 +208,14 @@ function onKeydown(e: KeyboardEvent) {
   right: 0;
   z-index: 10;
   padding: 12px 20px;
-  background-color: #c0c0c0;
-  border-bottom: 2px solid #808080;
-  border-left: 2px solid #ffffff;
-  border-right: 2px solid #808080;
+  background-color: var(--y2k-surface);
+  border-bottom: 2px solid var(--y2k-border-lo);
+  border-left: 2px solid var(--y2k-border-hi);
+  border-right: 2px solid var(--y2k-border-lo);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   font-family: "MS Sans Serif", Arial, sans-serif;
   font-size: 14px;
-  color: #000;
+  color: var(--y2k-text);
   text-align: center;
 }
 

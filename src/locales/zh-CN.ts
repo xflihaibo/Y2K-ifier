@@ -3,11 +3,13 @@ export default {
     title: 'Y2K-ifier',
     retroMode: '复古模式',
     crtScanlines: 'CRT 扫描线',
+    underConstruction: '建设中挂件',
     openThemePage: '打开主题页 (XP 壁纸 + 搜索)',
     openThemeShortcut: '快捷键：Alt+Shift+Y / Mac Option+Shift+Y（可在 chrome://extensions 中修改）',
     footer: 'Version 1.0 (C) 2026 RetroSoft',
     ariaRetroToggle: '复古模式开关',
     ariaCrtToggle: 'CRT 效果开关',
+    ariaUnderConstructionToggle: '建设中挂件开关',
     daysLabel: '天',
     companionSummaryBefore: 'Y2K 已经陪伴你了 ',
     companionSummaryAfter: ' 天',
@@ -117,5 +119,8 @@ export default {
   },
   settings: {
     language: '语言',
+    theme: '界面主题',
+    themeLight: '浅色',
+    themeDark: '暗黑',
   },
 } as const

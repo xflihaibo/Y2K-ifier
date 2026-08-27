@@ -1,0 +1,79 @@
+/* Y2K-ifier UI theme tokens — Popup / Newtab / NostalgicAgent */
+
+html.theme-light {
+  --y2k-surface: #c0c0c0;
+  --y2k-surface-elevated: #e0e0e0;
+  --y2k-surface-input: #ffffff;
+  --y2k-text: #000000;
+  --y2k-text-muted: #666666;
+  --y2k-text-secondary: #404040;
+  --y2k-text-label: #333333;
+  --y2k-accent: #000080;
+  --y2k-accent-hover: #0000b0;
+  --y2k-border-hi: #ffffff;
+  --y2k-border-lo: #808080;
+  --y2k-titlebar-gradient: linear-gradient(90deg, #000080, #1084d0);
+  --y2k-titlebar-text: #ffffff;
+  --y2k-link: #0000ee;
+  --y2k-link-hover: #ff0000;
+  --y2k-toggle-off: #808080;
+  --y2k-toggle-on: #008000;
+  --y2k-toggle-knob: #c0c0c0;
+  --y2k-toggle-state-on: #006400;
+  --y2k-toggle-state-off: #404040;
+  --y2k-btn-face: #c0c0c0;
+  --y2k-btn-face-hover: #e0e0e0;
+  --y2k-bubble-bg: #ffffff;
+  --y2k-bubble-border: #0054e3;
+  --y2k-newtab-fallback: #7cb3e9;
+  --y2k-newtab-overlay: transparent;
+  --y2k-newtab-search-bg: rgba(255, 255, 255, 0.96);
+  --y2k-newtab-search-border: #0054e3;
+  --y2k-newtab-search-text: #333333;
+  --y2k-newtab-select-bg: #f5f5f5;
+  --y2k-newtab-btn-gradient: linear-gradient(180deg, #3a7bd5 0%, #0054e3 100%);
+  --y2k-newtab-btn-gradient-hover: linear-gradient(180deg, #4a8be5 0%, #1064f3 100%);
+  --y2k-newtab-btn-active: #0047c4;
+  --y2k-agent-face-bg: #ffffff;
+  --y2k-agent-eye: #000000;
+  --y2k-agent-character-bg: linear-gradient(180deg, #c0c0c0 0%, #a0a0a0 100%);
+}
+
+html.theme-dark {
+  --y2k-surface: #2d2d2d;
+  --y2k-surface-elevated: #3d3d3d;
+  --y2k-surface-input: #1a1a1a;
+  --y2k-text: #e8e8e8;
+  --y2k-text-muted: #9a9a9a;
+  --y2k-text-secondary: #b0b0b0;
+  --y2k-text-label: #c8c8c8;
+  --y2k-accent: #7eb6ff;
+  --y2k-accent-hover: #a8d0ff;
+  --y2k-border-hi: #5c5c5c;
+  --y2k-border-lo: #1a1a1a;
+  --y2k-titlebar-gradient: linear-gradient(90deg, #1a2744, #2d4a6e);
+  --y2k-titlebar-text: #e8e8e8;
+  --y2k-link: #7eb6ff;
+  --y2k-link-hover: #ffb347;
+  --y2k-toggle-off: #565656;
+  --y2k-toggle-on: #4caf50;
+  --y2k-toggle-knob: #e8e8e8;
+  --y2k-toggle-state-on: #8fdf92;
+  --y2k-toggle-state-off: #d8d8d8;
+  --y2k-btn-face: #3a3a3a;
+  --y2k-btn-face-hover: #4a4a4a;
+  --y2k-bubble-bg: #353535;
+  --y2k-bubble-border: #4a7ec4;
+  --y2k-newtab-fallback: #1a1a24;
+  --y2k-newtab-overlay: rgba(0, 0, 0, 0.55);
+  --y2k-newtab-search-bg: rgba(36, 36, 44, 0.96);
+  --y2k-newtab-search-border: #4a6a9a;
+  --y2k-newtab-search-text: #e8e8e8;
+  --y2k-newtab-select-bg: #2a2a32;
+  --y2k-newtab-btn-gradient: linear-gradient(180deg, #3d5a80 0%, #2a4570 100%);
+  --y2k-newtab-btn-gradient-hover: linear-gradient(180deg, #4d6a90 0%, #355580 100%);
+  --y2k-newtab-btn-active: #1e3350;
+  --y2k-agent-face-bg: #e8e8e8;
+  --y2k-agent-eye: #1a1a1a;
+  --y2k-agent-character-bg: linear-gradient(180deg, #4a4a4a 0%, #323232 100%);
+}

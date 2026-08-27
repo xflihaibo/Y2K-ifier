@@ -2,6 +2,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { getStoredLocale, setStoredLocale, type LocaleId } from '@/i18n'
+import { getStoredTheme, setStoredTheme, type UiTheme } from '@/theme'
 import { getNewtabUrl } from '@/constants'
 
 const { t, locale } = useI18n()
@@ -18,6 +19,7 @@ const MILESTONE_LEVELS: { minDays: number; maxDays: number; labelIndex: number }
 
 const retroEnabled = ref(true)
 const crtEnabled = ref(true)
+const underConstructionEnabled = ref(false)
 const companionDays = ref(0)
 const currentMilestoneLabel = ref<string | null>(null)
 const showMorningGreeting = ref(false)
@@ -46,9 +48,13 @@ interface ClipboardItem {
 }
 const clipboardEnabled = ref(true)
 const clipboardList = ref<ClipboardItem[]>([])
+const uiTheme = ref<UiTheme>('light')
 
 const retroStateText = computed(() => (retroEnabled.value ? t('common.on') : t('common.off')))
 const crtStateText = computed(() => (crtEnabled.value ? t('common.on') : t('common.off')))
+const underConstructionStateText = computed(() =>
+  underConstructionEnabled.value ? t('common.on') : t('common.off')
+)
 
 const AGENT_PRESET_KEYS = [
   'agent.preset1', 'agent.preset2', 'agent.preset3', 'agent.preset4', 'agent.preset5',
@@ -212,15 +218,25 @@ async function dismissMorningGreeting() {
 }
 
 onMounted(async () => {
-  const data = await chrome.storage.local.get(['isEnabled', 'crtEnabled', 'y2kAgentAvatarVisible'])
+  const data = await chrome.storage.local.get([
+    'isEnabled',
+    'crtEnabled',
+    'underConstructionEnabled',
+    'y2kAgentAvatarVisible',
+  ])
   retroEnabled.value = data.isEnabled !== false
   crtEnabled.value = data.crtEnabled !== false
+  underConstructionEnabled.value = data.underConstructionEnabled === true
   if (data.crtEnabled === undefined) {
     await chrome.storage.local.set({ crtEnabled: true })
+  }
+  if (data.underConstructionEnabled === undefined) {
+    await chrome.storage.local.set({ underConstructionEnabled: false })
   }
   showAgentAvatar.value = data.y2kAgentAvatarVisible !== false
   const stored = await getStoredLocale()
   locale.value = stored
+  uiTheme.value = await getStoredTheme()
   await ensureY2kActiveDay()
   await loadCompanionDays()
   await loadMorningGreeting()
@@ -277,6 +293,17 @@ async function onCrtChange() {
   chrome.runtime.sendMessage({ action: 'toggleCRT', state: crtEnabled.value })
 }
 
+async function onUnderConstructionChange(e: Event) {
+  const enabled = (e.target as HTMLInputElement).checked
+  underConstructionEnabled.value = enabled
+  await chrome.storage.local.set({ underConstructionEnabled: enabled })
+  try {
+    await chrome.runtime.sendMessage({ action: 'toggleUnderConstruction', state: enabled })
+  } catch {
+    // service worker 可能刚醒来，storage.onChanged 会兜底
+  }
+}
+
 function openThemePage() {
   chrome.tabs.create({ url: getNewtabUrl() }).catch(() => {
     // 权限或环境异常时静默失败，用户可重试
@@ -285,6 +312,11 @@ function openThemePage() {
 
 async function setLocale(id: LocaleId) {
   await setStoredLocale(id)
+}
+
+async function setTheme(theme: UiTheme) {
+  uiTheme.value = theme
+  await setStoredTheme(theme)
 }
 </script>
 
@@ -315,7 +347,7 @@ async function setLocale(id: LocaleId) {
           @change="onRetroChange"
         >
         <label for="retroToggle">{{ t('popup.retroMode') }}</label>
-        <span class="toggle-state" aria-live="polite">{{ retroStateText }}</span>
+        <span class="toggle-state" :class="retroEnabled ? 'is-on' : 'is-off'" aria-live="polite">{{ retroStateText }}</span>
       </div>
       <div class="control-group">
         <input
@@ -326,7 +358,22 @@ async function setLocale(id: LocaleId) {
           @change="onCrtChange"
         >
         <label for="crtToggle">{{ t('popup.crtScanlines') }}</label>
-        <span class="toggle-state" aria-live="polite">{{ crtStateText }}</span>
+        <span class="toggle-state" :class="crtEnabled ? 'is-on' : 'is-off'" aria-live="polite">{{ crtStateText }}</span>
+      </div>
+      <div class="control-group">
+        <input
+          id="underConstructionToggle"
+          v-model="underConstructionEnabled"
+          type="checkbox"
+          :aria-label="t('popup.ariaUnderConstructionToggle')"
+          @change="onUnderConstructionChange"
+        >
+        <label for="underConstructionToggle">{{ t('popup.underConstruction') }}</label>
+        <span
+          class="toggle-state"
+          :class="underConstructionEnabled ? 'is-on' : 'is-off'"
+          aria-live="polite"
+        >{{ underConstructionStateText }}</span>
       </div>
       <div class="control-group control-group--theme">
         <button type="button" class="link-btn" @click="openThemePage">
@@ -344,9 +391,17 @@ async function setLocale(id: LocaleId) {
             @change="saveRitualSettings"
           >
           <label for="ritualToggle">{{ t('popup.ritualEnable') }}</label>
+          <span class="toggle-state" :class="ritualEnabled ? 'is-on' : 'is-off'">{{ ritualEnabled ? t('common.on') : t('common.off') }}</span>
         </div>
         <div class="control-group ritual-time-row">
           <label for="ritualTime" class="ritual-time-label">{{ t('popup.ritualTimeLabel') }}:</label>
+          <input
+            id="ritualTime"
+            v-model="ritualTime"
+            type="time"
+            class="ritual-time-input"
+            @change="saveRitualSettings"
+          >
         </div>
         <button type="button" class="link-btn ritual-preview-btn" @click="previewRitual">
           {{ t('popup.ritualPreview') }}
@@ -414,6 +469,15 @@ async function setLocale(id: LocaleId) {
           </button>
         </div>
       </div>
+      <div class="theme-row">
+        <span class="theme-label">{{ t('settings.theme') }}:</span>
+        <button type="button" class="theme-btn" :class="{ active: uiTheme === 'light' }" @click="setTheme('light')">
+          {{ t('settings.themeLight') }}
+        </button>
+        <button type="button" class="theme-btn" :class="{ active: uiTheme === 'dark' }" @click="setTheme('dark')">
+          {{ t('settings.themeDark') }}
+        </button>
+      </div>
       <div class="lang-row">
         <span class="lang-label">{{ t('settings.language') }}:</span>
         <button type="button" class="lang-btn" :class="{ active: locale === 'en' }" @click="setLocale('en')">
@@ -469,10 +533,36 @@ async function setLocale(id: LocaleId) {
 }
 .shortcut-hint {
   font-size: 9px;
-  color: #666;
+  color: var(--y2k-text-muted);
   text-align: center;
   line-height: 1.25;
   word-wrap: break-word;
+}
+.theme-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+.theme-label {
+  font-size: 11px;
+  color: var(--y2k-text-label);
+}
+.theme-btn {
+  height: 18px;
+  padding: 0 6px;
+  font-size: 10px;
+  line-height: 18px;
+  background: var(--y2k-surface-elevated);
+  border: 1px solid var(--y2k-border-lo);
+  color: var(--y2k-text);
+  cursor: pointer;
+  box-sizing: border-box;
+}
+.theme-btn.active {
+  background: var(--y2k-btn-face);
+  font-weight: bold;
 }
 .lang-row {
   display: flex;
@@ -483,20 +573,21 @@ async function setLocale(id: LocaleId) {
 }
 .lang-label {
   font-size: 11px;
-  color: #333;
+  color: var(--y2k-text-label);
 }
 .lang-btn {
   height: 18px;
   padding: 0 6px;
   font-size: 10px;
   line-height: 18px;
-  background: #e0e0e0;
-  border: 1px solid #808080;
+  background: var(--y2k-surface-elevated);
+  border: 1px solid var(--y2k-border-lo);
+  color: var(--y2k-text);
   cursor: pointer;
   box-sizing: border-box;
 }
 .lang-btn.active {
-  background: #c0c0c0;
+  background: var(--y2k-btn-face);
   font-weight: bold;
 }
 </style>

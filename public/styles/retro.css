@@ -249,9 +249,8 @@ html.y2k-crt-active::before {
   z-index: 2147483646 !important;
 }
 
-/* 12. “正在建设中”挂件 (Under Construction) - 像素级 SVG 动画修复版 */
+/* 12. “正在建设中”挂件 — 主样式由注入脚本内联，此处作兜底 */
 #y2k-under-construction {
-  all: initial !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -261,15 +260,19 @@ html.y2k-crt-active::before {
   width: 120px !important;
   height: 40px !important;
   z-index: 2147483647 !important;
-  /* 注入自制的像素级 SVG 动画，完美模拟 90 年代的动态效果 */
-  background-image: url("data:image/svg+xml,%3Csvg width='120' height='40' viewBox='0 0 120 40' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='120' height='40' fill='%23FFD700'/%3E%3Cpath d='M-20 0L-10 0L-40 30L-50 30ZM0 0L10 0L-20 30L-30 30ZM20 0L30 0L0 30L-10 30ZM40 0L50 0L20 30L10 30ZM60 0L70 0L40 30L30 30ZM80 0L90 0L60 30L50 30ZM100 0L110 0L80 30L70 30ZM120 0L130 0L100 30L90 30ZM140 0L150 0L120 30L110 30Z' fill='%23000'%3E%3CanimateTransform attributeName='transform' type='translate' from='0 0' to='20 0' dur='0.5s' repeatCount='indefinite'/%3E%3C/path%3E%3Crect x='5' y='5' width='110' height='30' fill='%23FFD700' stroke='%23000' stroke-width='2'/%3E%3Ctext x='60' y='24' font-family='Courier New, monospace' font-size='10' font-weight='bold' fill='%23000' text-anchor='middle' style='image-rendering: pixelated;'%3EUNDER CONSTRUCTION%3C/text%3E%3C/svg%3E") !important;
-  background-size: contain !important;
-  background-repeat: no-repeat !important;
   pointer-events: none !important;
-  image-rendering: pixelated !important;
-  visibility: visible !important;
-  opacity: 1 !important;
   box-shadow: 4px 4px 0 #000 !important;
+  background: #ffd700 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  overflow: hidden !important;
+}
+
+#y2k-under-construction svg {
+  display: block !important;
+  width: 120px !important;
+  height: 40px !important;
 }
 
 /* 13. 跑马灯效果 (Marquee Bar) - 仅在 CRT 开启时显示 */
